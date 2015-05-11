@@ -34,7 +34,8 @@ d3.json("news.json", function(error, graph) {
  
   var color;
 
-  if (graph.color === "clusters") 
+  console.log(graph.color)
+  if (graph.color === "degree") 
     color = d3.scale.sqrt()
               .domain([ graph.min_degree, graph.max_degree ])
               .range(["grey", "red"]);

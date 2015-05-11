@@ -76,7 +76,7 @@ def percent(string):
 parser = ap.ArgumentParser(description = "Adapts similarity measures to a json file for visualization.")
 
 parser.add_argument("nodes_file", type=ap.FileType("r"), help = \
-    "A file with names for nodes. If -f is used, flows will be parsed from this" + \
+    "A file with names for nodes. If -f is used, flows will be parsed from this " + \
     "file too.")
 
 parser.add_argument("edges_file", type=ap.FileType("r"), help = \
@@ -92,7 +92,7 @@ parser.add_argument("-i", "--influences", action="store_true", help = "Use this 
 coloring = parser.add_mutually_exclusive_group(required=False)
 
 coloring.add_argument("-c", "--cluster", metavar="N", type=positive_int, help = "Cluster nodes into N groups to color them.")
-coloring.add_argument("-w", "--weighted", type=str, choices=["degree", "links"], default="degree", help = "Use degree to color nodes. 'weighted' (default) uses weighted degree; 'links' only counts the number of edges.")
+coloring.add_argument("-d", "--degree", type=str, choices=["weights", "links"], default="degrees", help = "Use degree to color nodes. 'weights' (default) uses weighted degree; 'links' only counts the number of edges.")
 
 args = parser.parse_args()
 
@@ -127,14 +127,13 @@ with args.out_file as json_file:
 
             if args.cluster:
                 groups = cluster(G, [x.split(" ")[0].strip() for x in nodes_data ] if args.influences else [x.strip() for x in nodes_data], args.cluster )
-            elif not args.degree:
+            elif args.degree is None:
                 groups = [0] * len(nodes_data)
-            elif args.degree == "weighted":
+            elif args.degree == "weights":
                 groups = [ G.degree(ind, weight = "weight") for ind, line in enumerate(nodes_data) ]
             elif args.degree == "links":
                 groups = [ G.degree(ind, weight = None) for ind, line in enumerate(nodes_data) ]
  
-           
             json_file.write("{\n \"nodes\" :[\n")
 
             if args.influences:
@@ -155,15 +154,15 @@ with args.out_file as json_file:
             chosen_list = [] 
 
             for edge in chosen_edges:
-                chosen_list.append("{\"source\": %d, \"target\": %d, \"value\": %f }" % (edge[0], edge[1], (edge[2] if args.weighted else 1)))
+                chosen_list.append("{\"source\": %d, \"target\": %d, \"value\": %f }" % (edge[0], edge[1], (edge[2] if args.degree and args.degree == "weights" else 1)))
             json_file.write(",\n".join(reversed(chosen_list)))
             json_file.write("],\n")
 
             json_file.write("\"max_degree\" : %f," % \
-                max( G.degree(range(len(nodes_data)), weight = ("weight" if args.weighted else None)).values() ))
+                max( G.degree(range(len(nodes_data)), weight = ("weight" if args.degree == "weights" else None)).values() ))
 
             json_file.write("\"min_degree\" : %f," % \
-                min( G.degree(range(len(nodes_data)), weight = ("weight" if args.weighted else None)).values() ))
+                min( G.degree(range(len(nodes_data)), weight = ("weight" if args.degree == "weights" else None)).values() ))
 
             if args.influences:        
                 json_file.write("\"min_influence\": %d," % min([ int(line.split(" ")[1].rstrip("\r\n")) for ind, line in enumerate(nodes_data) ]))
@@ -177,6 +176,6 @@ with args.out_file as json_file:
             json_file.write("\"max_similarity\": %f," % max( [ x[2] for x in chosen_edges ] ))
             json_file.write("\"min_similarity\": %f," % min( [ x[2] for x in chosen_edges ] ))
             
-            json_file.write("\"color\": \"%r\"" % "clusters" if args.cluster else "degree")
+            json_file.write("\"color\": " + ("\"clusters\"" if args.cluster else "\"degree\""))
 
             json_file.write("}")
