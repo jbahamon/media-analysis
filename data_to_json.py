@@ -2,6 +2,69 @@
 import argparse as ap
 import sys
 
+def fix_dendrogram(graph, cl):
+    already_merged = set()
+    for merge in cl.merges:
+        already_merged.update(merge)
+
+    num_dendrogram_nodes = graph.vcount() + len(cl.merges)
+    not_merged_yet = sorted(set(xrange(num_dendrogram_nodes)) - already_merged)
+    if len(not_merged_yet) < 2:
+        return
+
+    v1, v2 = not_merged_yet[:2]
+    cl._merges.append((v1, v2))
+    del not_merged_yet[:2]
+
+    missing_nodes = xrange(num_dendrogram_nodes,
+            num_dendrogram_nodes + len(not_merged_yet))
+    cl._merges.extend(zip(not_merged_yet, missing_nodes))
+    cl._nmerges = graph.vcount()-1
+    cl._nitems = graph.vcount()
+
+def cluster(G, nodes, N):
+
+    import igraph as ig
+    import numpy as np
+    
+    a_numpy = np.triu(nx.to_numpy_matrix(G))
+    # get the row, col indices of the non-zero elements in your adjacency matrix
+    conn_indices = np.where(a_numpy)
+    
+    conn_indices = [ conn.tolist()[0] for conn in conn_indices ]
+    
+    # get the weights corresponding to these indices
+    weights = a_numpy[conn_indices].tolist()[0]
+    # a sequence of (i, j) tuples, each corresponding to an edge from i -> j
+    edges = zip(*conn_indices)
+    # initialize the graph from the edge sequence
+    g = ig.Graph(n=len(nodes_data), edges=edges, directed=False)
+    
+    # assign node names and weights to be attributes of the vertices and edges
+    # respectively
+    g.vs['label'] = nodes_data
+    g.es['weight'] = weights
+    
+    # I will also assign the weights to the 'width' attribute of the edges. this
+    # means that igraph.plot will set the line thicknesses according to the edge
+    # weights
+    g.es['width'] = weights
+    
+    clusterings = g.community_fastgreedy(weights = "weight")
+
+    fix_dendrogram(g, clusterings)
+
+    return clusterings.as_clustering(N).membership
+
+
+def positive_int(string):
+    value = int(string)
+
+    if value < 1:
+        msg = "%r should be greater than 0" % string
+        raise argparse.ArgumentTypeError(msg)
+    return value
+
 def percent(string):
     value = float(string)
     
@@ -24,9 +87,12 @@ parser.add_argument("-o", "--out_file",type=ap.FileType("w"), default=sys.stdout
 
 parser.add_argument("-p", "--percentage", type=percent, default=5.0, help = "Percentage of the strongest edges to be considered, in the [0, 100] range (default: %(default)s)")
 
-parser.add_argument("-i", "--influences", action="store_true", help = "Use this if the node file contains a measure for its influence next to each name.")
+parser.add_argument("-i", "--influences", action="store_true", help = "Use this if the node file contains a measure for its influence next to each name, for node size.")
 
-parser.add_argument("-w", "--weighted", action="store_true", help = "Use weighted degree to color nodes")
+coloring = parser.add_mutually_exclusive_group(required=False)
+
+coloring.add_argument("-c", "--cluster", metavar="N", type=positive_int, help = "Cluster nodes into N groups to color them.")
+coloring.add_argument("-w", "--weighted", type=str, choices=["degree", "links"], default="degree", help = "Use degree to color nodes. 'weighted' (default) uses weighted degree; 'links' only counts the number of edges.")
 
 args = parser.parse_args()
 
@@ -56,20 +122,31 @@ with args.out_file as json_file:
             target_length = int(math.ceil(len(edges_data) * percentage))
             chosen_edges = edges_list[0:target_length]
             G.add_weighted_edges_from(chosen_edges)
-            weights = [ x[2] for x in chosen_edges ] 
+            weights = [ x[2] for x in chosen_edges ]
+
+
+            if args.cluster:
+                groups = cluster(G, [x.split(" ")[0].strip() for x in nodes_data ] if args.influences else [x.strip() for x in nodes_data], args.cluster )
+            elif not args.degree:
+                groups = [0] * len(nodes_data)
+            elif args.degree == "weighted":
+                groups = [ G.degree(ind, weight = "weight") for ind, line in enumerate(nodes_data) ]
+            elif args.degree == "links":
+                groups = [ G.degree(ind, weight = None) for ind, line in enumerate(nodes_data) ]
+ 
            
             json_file.write("{\n \"nodes\" :[\n")
 
             if args.influences:
-		nodes = ",\n".join([ ( "{\"name\":\"%s\", \"degree\": %f, \"size\": %d }" % \
+		nodes = ",\n".join([ ( "{\"name\":\"%s\", \"color_value\": %f, \"size\": %d }" % \
                     ( line.split(" ")[0].rstrip("\r\n"), \
-                      G.degree(ind, weight = ("weight" if args.weighted else None)), \
+                      groups[ind], \
                       int(line.split(" ")[1].rstrip("\r\n")) ) ) \
                       for ind, line in enumerate(nodes_data) ])
             else:
-                nodes = ",\n".join([ ( "{\"name\":\"%s\", \"degree\": %f, \"size\": 5 }" % \
+                nodes = ",\n".join([ ( "{\"name\":\"%s\", \"color_value\": %f, \"size\": 5 }" % \
                     ( line.split(" ")[0].rstrip("\r\n"), \
-                      G.degree(ind, weight = ("weight" if args.weighted else None)))) \
+                      groups[ind] )) \
                       for ind, line in enumerate(nodes_data) ])
 
             json_file.write(nodes)
@@ -98,6 +175,8 @@ with args.out_file as json_file:
                 json_file.write("\"min_influence\": 5,") 
             
             json_file.write("\"max_similarity\": %f," % max( [ x[2] for x in chosen_edges ] ))
-            json_file.write("\"min_similarity\": %f" % min( [ x[2] for x in chosen_edges ] ))
+            json_file.write("\"min_similarity\": %f," % min( [ x[2] for x in chosen_edges ] ))
+            
+            json_file.write("\"color\": \"%r\"" % "clusters" if args.cluster else "degree")
 
             json_file.write("}")
