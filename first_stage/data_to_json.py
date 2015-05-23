@@ -24,8 +24,8 @@ def fix_dendrogram(graph, cl):
 
 def cluster(G, nodes, N):
 
-    import igraph as ig
     import numpy as np
+    import igraph as ig
     
     a_numpy = np.triu(nx.to_numpy_matrix(G))
     # get the row, col indices of the non-zero elements in your adjacency matrix
@@ -76,7 +76,7 @@ def percent(string):
 parser = ap.ArgumentParser(description = "Adapts similarity measures to a json file for visualization.")
 
 parser.add_argument("nodes_file", type=ap.FileType("r"), help = \
-    "A file with names for nodes. If -f is used, flows will be parsed from this " + \
+    "A file with names for nodes. If -i is used, influences will be parsed from this " + \
     "file too.")
 
 parser.add_argument("edges_file", type=ap.FileType("r"), help = \
@@ -154,7 +154,7 @@ with args.out_file as json_file:
             chosen_list = [] 
 
             for edge in chosen_edges:
-                chosen_list.append("{\"source\": %d, \"target\": %d, \"value\": %f }" % (edge[0], edge[1], (edge[2] if args.degree and args.degree == "weights" else 1)))
+                chosen_list.append("{\"source\": %d, \"target\": %d, \"value\": %f }" % (edge[0], edge[1], edge[2]))
             json_file.write(",\n".join(reversed(chosen_list)))
             json_file.write("],\n")
 
