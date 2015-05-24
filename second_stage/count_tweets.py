@@ -20,17 +20,12 @@ class readable_dir(ap.Action):
             raise ap.ArgumentTypeError(("readable_dir:{0} is not a" + \
             "readable dir".format(prospective_dir)))
 
-# this is enough for now.
-normalize_text = lambda text: unidecode(text).strip().lower()
 
-parser = ap.ArgumentParser(description = "Computes time series for a" + \
-    "folder of JSON files containing tweets and a term.")
+parser = ap.ArgumentParser(description = "Computes the amount of tweets per day for a" + \
+    "folder of JSON files containing tweets.")
 
 parser.add_argument("folder", action=readable_dir, help = \
         "The folder to read JSON files from.")
-
-parser.add_argument("terms", help = "The terms to create the time series for.
-        These are treated as a single term")
 
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the " + \
         "output file.")
@@ -45,9 +40,6 @@ parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdou
 args = parser.parse_args()
 
 folder = args.folder
-term = normalize_text(args.term)
-
-media_histogram = defaultdict(int)
 
 files = [ filename for filename in os.listdir(folder) \
         if os.path.isfile(os.path.join(folder, filename)) and \
@@ -55,30 +47,20 @@ files = [ filename for filename in os.listdir(folder) \
 
 files = sorted(files)
 
-# Date 
-
-mentions     = defaultdict(lambda: defaultdict(float))
 total_tweets = defaultdict(lambda: defaultdict(float))
-
 all_days = set()
-
 
 for filename in files:
 
     with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
 
         parsed_json = json.loads(f.read())
-
-        day =  filename[0:10]
         
+        day =  filename[0:10]
         all_days.add(day)
         
         for tweet in parsed_json:
             name = tweet["user"]["screen_name"]
-            text = normalize_text(tweet["text"])
-            
-            if args.term in text.split():
-                mentions[name][day] += 1
 
             total_tweets[name][day] += 1
             
@@ -86,29 +68,22 @@ all_days = sorted(list(all_days))
 
 #FIXME: this might cause problems, as we're modifying things while reading them
 # better ask someone.
-for name, days in mentions.items():
-    
+for name, days in total_tweets.items():
+
     # We force every day to appear.
     for day in all_days:
         days[day]
 
-    for day, amount in days.items():
-        total_for_day = total_tweets[name][day]
-        mentions[name][day] = amount/total_for_day if total_for_day > 0 else 0
-
-
-
 with args.out_file as out_file:
+    for name, days in total_tweets.items():
+        out_file.write( " ".join([ str(days[day]) for day in sorted(days.keys()) ]) + "\n")
 
-    if args.pretty:
-        out_file.write(json.dumps( \
-            { "time_labels" : all_days, \
-              "series": mentions,
-              indent=4, separators = (",", ":" )))
-    else:
-        out_file.write(json.dumps( \
-            { "time_labels" : all_days, \
-              "series": mentions }))
-              
-
-        
+    #    if args.pretty:
+    #        out_file.write(json.dumps( \
+    #            { "time_labels" : all_days, \
+    #              "values": total_tweets}, \
+    #              indent=4, separators = (",", ":" )))
+    #    else:
+    #        out_file.write(json.dumps( \
+    #            { "time_labels" : all_days, \
+    #              "values": total_tweets } ))
