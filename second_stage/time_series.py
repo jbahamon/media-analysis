@@ -6,6 +6,9 @@ import os, sys
 from collections import defaultdict
 from unidecode import unidecode
 import string, codecs, re
+from datetime import datetime
+
+date_format = "%Y-%m-%d"
 
 class readable_dir(ap.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -29,8 +32,12 @@ parser = ap.ArgumentParser(description = "Computes time series for a" + \
 parser.add_argument("folder", action=readable_dir, help = \
         "The folder to read JSON files from.")
 
-parser.add_argument("terms", help = "The terms to create the time series for.
-        These are treated as a single term")
+parser.add_argument("term", help = "The terms to create the time series for."+ \
+        "These are treated as a single term")
+
+parser.add_argument("-t", "--threshold", default=0, type=float, \
+        help = "The minimum average tweet-per-day to require. Default is no" +\
+        "threshold at all.")
 
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the " + \
         "output file.")
@@ -62,15 +69,12 @@ total_tweets = defaultdict(lambda: defaultdict(float))
 
 all_days = set()
 
-
 for filename in files:
 
     with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
 
         parsed_json = json.loads(f.read())
-
         day =  filename[0:10]
-        
         all_days.add(day)
         
         for tweet in parsed_json:
@@ -84,10 +88,19 @@ for filename in files:
             
 all_days = sorted(list(all_days))
 
+day_range = datetime.strptime(all_days[-1], date_format) - \
+            datetime.strptime(all_days[ 0], date_format)
+
 #FIXME: this might cause problems, as we're modifying things while reading them
 # better ask someone.
 for name, days in mentions.items():
-    
+
+    # We remove the 
+    if sum( [ x for x in total_tweets[name].values() ] )/float(day_range.days) < args.threshold :
+        del mentions[name]
+        del total_tweets[name]
+        continue
+
     # We force every day to appear.
     for day in all_days:
         days[day]
@@ -96,6 +109,8 @@ for name, days in mentions.items():
         total_for_day = total_tweets[name][day]
         mentions[name][day] = amount/total_for_day if total_for_day > 0 else 0
 
+    dayz = mentions[name]
+    mentions[name] = [ dayz[key] for key in sorted(dayz.keys()) ] 
 
 
 with args.out_file as out_file:
@@ -103,8 +118,8 @@ with args.out_file as out_file:
     if args.pretty:
         out_file.write(json.dumps( \
             { "time_labels" : all_days, \
-              "series": mentions,
-              indent=4, separators = (",", ":" )))
+              "series": mentions }, \
+              indent = 4, separators = (",", ":" )))
     else:
         out_file.write(json.dumps( \
             { "time_labels" : all_days, \

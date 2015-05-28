@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<script
+    src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<style>
+
+.node {
+  stroke: #000000;
+  stroke-width: 0.5px;
+}
+
+.link {
+}
+
+</style>
+</head>
+<body>
+    <center>
+    <div>
+        correlation-threshold : <input id="c-t" type="range" min="0.5" max="1" step="0.0001">
+        <span id="c-label">0</span>
+    </div>
+    <div>
+        p-threshold : <input id="p-t" type="range" min="0" max="0.5" step="0.0001">
+        <span id="p-label">0</span>
+</div>
+   <button id="update_button">Update graph</button>
+   </center>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+    $.urlParam = function(name){
+        var results = new RegExp('[\?&]' + name +
+        '=([^&#]*)').exec(window.location.href);
+        if (results==null){
+            return null;
+        }
+        else{
+            return results[1] || 0;
+        }
+    }
+    var p_threshold = ($.urlParam("p") !== null)? parseFloat($.urlParam("p")) :
+                        0.01;
+    var c_threshold = ($.urlParam("c") !== null)? parseFloat($.urlParam("c")) :
+                        0.7;
+
+    console.log(p_threshold);
+    $("#c-t").val(c_threshold);
+    $("#p-t").val(p_threshold);
+    $("#c-label").text(parseFloat(c_threshold).toFixed(3));
+    $("#p-label").text(parseFloat(p_threshold).toFixed(3));
+    $("#c-t" ).on("change input", function() {
+        $("#c-label").text(parseFloat($("#c-t").val()).toFixed(3));
+    });
+    
+    $("#p-t" ).on("change input", function() {
+        $("#p-label").text(parseFloat($("#p-t").val()).toFixed(3));
+    });
+
+    $("#update_button").on("click", function() {
+        var curr_location = location.protocol + '//' + location.host + location.pathname;
+        $(location).attr("href", curr_location + "?p=" + $("#p-t").val() + 
+            "&c=" + $("#c-t").val());
+    });
+d3.json("correlations.json", function(error, graph) {
+
+  var width = 1360,
+      height = 768;
+  
+  var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+  
+  var graph_data;
+  
+  var size = d3.scale.log()
+            .domain([])
+            .range([3, 10]);
+  
+  var color = d3.scale.category20();
+
+
+  var linkcolorpos = d3.scale.linear()
+  .domain([c_threshold,1])
+  .range(["grey", "red"]);
+
+  var linkcolorneg = d3.scale.linear()
+  .domain([-1, -c_threshold])
+  .range(["blue", "gray"]);
+
+  var links = []
+  var min_p = Infinity;
+  var max_p = -Infinity;
+
+  for (var i = 0; i < graph.links.length; i++) {
+    if (graph.links[i].value[1] < p_threshold && Math.abs(graph.links[i].value[0]
+    > c_threshold)) {
+        links[links.length] = graph.links[i];
+        if (graph.links[i].value[1] < min_p) {
+            min_p = graph.links[i].value[1];
+        }
+
+        if (graph.links[i].value[1] > max_p) {
+            max_p = graph.links[i].value[1];
+        }
+    }
+  }
+
+  var linkwidth = d3.scale.linear()
+      .domain([min_p, max_p])
+      .range([1, 10]).clamp(true);
+
+  var force = d3.layout.force()
+      .charge(-120)
+      .linkDistance(120)
+      .size([width, height]);
+
+  force
+      .nodes(graph.nodes)
+      .links(links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+    .enter().append("line")
+      .attr("class", "link")
+      .style("stroke", function(d) { return (d.value[0] > 0)?
+          linkcolorpos(d.value[0]):linkcolorneg(d.value[0])} )
+      .style("stroke-width", function(d) { 
+          return linkwidth(d.value[1]);} );
+
+  link.append("title")
+      .text(function(d) { return d.value; });
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", function(d) { return 10; })
+      .style("fill", function(d) { return color(d.color_value); })
+      .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+});
+
+</script>
