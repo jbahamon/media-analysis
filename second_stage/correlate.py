@@ -1,10 +1,18 @@
 #!/usr/bin/python
 
+
 import json
 import argparse as ap
 import os, sys
 from datetime import datetime
+
+import numpy as np
+from scipy import stats
 from scipy.stats import spearmanr, kurtosis
+from math import sqrt
+
+import warnings
+warnings.filterwarnings('error')
 date_format = "%Y-%m-%d"
 
 parser = ap.ArgumentParser(description = "Computes correlations for a " \
@@ -29,19 +37,35 @@ def get_correlation_confidence(series1, series2):
     series_length = len(series1)
 
     correlations = []
-
+    n = 0
     for i in range(series_length):
+
+        if series1[i] != 0 or series2[i] != 0:
+            n += 1
+
         s1_temp = series1[0:i] + series1[i+1:]
         s2_temp = series2[0:i] + series2[i+1:]
+        
+        if sum(s1_temp) > 0 and sum(s2_temp) > 0:
+            spear = spearmanr(s1_temp, s2_temp)
+            correlations.append(spearmanr(s1_temp, s2_temp)[0])
 
-        correlations.push(spearmanr(s1_temp, s2_temp)[0])
+    if len(correlations) == 0:
+        return (0, 1, 0)
+    
+    mean, sigma = np.mean(correlations), np.std(correlations)
 
+    if sigma > 0: 
 
-    mean_correlation = sum(correlations)/float(series_length)
+        CI = stats.norm.interval(0.95, loc=mean,
+                scale=sigma/sqrt(len(correlations)))
+        CI_size = CI[1] - CI[0]
+        k = kurtosis(correlations)
+    else:
+        CI_size = 0
+        k = 0
 
-    k = kurtosis(correlations)
-
-    return (mean_correlation, k)
+    return (mean, CI_size, n)
 
 
 args = parser.parse_args()
@@ -64,16 +88,17 @@ with args.in_file as json_file:
                   for i in range(n_names) ]
 
 
-        links = []
+        links = { term: [] for term in parsed_json["series"].keys() }
 
         for term, series in parsed_json["series"].items():
-            for i in range(n_names):
-                for j in range(i + 1, n_names):
-                    correlation_confidence = get_correlation_confidence(\
-                            parsed_json["series"][names[i]], \
-                            parsed_json["series"][names[j]])
+            for i in [ i for i in range(n_names) if names[i] in series ]:
+                for j in [ j for j in range(i + 1, n_names) if names[j] in series ]:
 
-                    links.append( { "source": i, \
+                    correlation_confidence = get_correlation_confidence(\
+                            series[names[i]], \
+                            series[names[j]])
+
+                    links[term].append( { "source": i, \
                                     "target": j, \
                                     "value" : correlation_confidence })
 

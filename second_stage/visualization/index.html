@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
+<link rel="stylesheet"
+  href="./jquery-ui-1.11.4/jquery-ui.css">
 <script
     src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script
+    src="./jquery-ui-1.11.4/jquery-ui.min.js"></script>
 <style>
 
 .node {
@@ -14,21 +18,23 @@
 }
 
 </style>
-</head>
-<body>
-    <center>
-    <div>
-        correlation-threshold : <input id="c-t" type="range" min="0.5" max="1" step="0.0001">
-        <span id="c-label">0</span>
-    </div>
-    <div>
-        p-threshold : <input id="p-t" type="range" min="0" max="0.5" step="0.0001">
-        <span id="p-label">0</span>
-</div>
-   <button id="update_button">Update graph</button>
-   </center>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
+
+  $(function() {
+      $( "#s-r" ).slider({
+          range: true,
+          min: 0,
+          max: 0.1,
+          step: 0.0001,
+          values: [ 0, 0.2 ],
+          slide: function( event, ui ) {
+              $("#s-label").text(
+              ("" + parseFloat(ui.values[ 0 ]).toFixed(3)) + " - " +
+              ("" + parseFloat(ui.values[ 1 ]).toFixed(3)));
+          }
+      });
+
     $.urlParam = function(name){
         var results = new RegExp('[\?&]' + name +
         '=([^&#]*)').exec(window.location.href);
@@ -39,30 +45,55 @@
             return results[1] || 0;
         }
     }
-    var p_threshold = ($.urlParam("p") !== null)? parseFloat($.urlParam("p")) :
-                        0.01;
+    var term = ($.urlParam("term") !== null)?
+        $.urlParam("term"):"none_option";
+    var s_threshold_high = ($.urlParam("s_high") !== null)?
+        parseFloat($.urlParam("s_high")) : 0.2;
+    var s_threshold_low = ($.urlParam("s_low") !== null)?
+        parseFloat($.urlParam("s_low")) : 0.;
     var c_threshold = ($.urlParam("c") !== null)? parseFloat($.urlParam("c")) :
                         0.7;
 
-    console.log(p_threshold);
+    var n_threshold = ($.urlParam("n") !== null)? parseFloat($.urlParam("n")) :
+                        2;
+
     $("#c-t").val(c_threshold);
-    $("#p-t").val(p_threshold);
+    $("#s-r").slider("option", "values", [s_threshold_low, s_threshold_high]);
     $("#c-label").text(parseFloat(c_threshold).toFixed(3));
-    $("#p-label").text(parseFloat(p_threshold).toFixed(3));
+    $("#s-label").text("" + parseFloat(s_threshold_low).toFixed(3) + " - " +
+        parseFloat(s_threshold_high).toFixed(3));
     $("#c-t" ).on("change input", function() {
         $("#c-label").text(parseFloat($("#c-t").val()).toFixed(3));
     });
-    
-    $("#p-t" ).on("change input", function() {
-        $("#p-label").text(parseFloat($("#p-t").val()).toFixed(3));
+    $("#n-t").val(n_threshold);
+    $("#n-label").text(parseFloat(n_threshold).toFixed(3));
+    $("#n-t" ).on("change input", function() {
+        $("#n-label").text(parseFloat($("#n-t").val()).toFixed(3));
     });
-
     $("#update_button").on("click", function() {
         var curr_location = location.protocol + '//' + location.host + location.pathname;
-        $(location).attr("href", curr_location + "?p=" + $("#p-t").val() + 
-            "&c=" + $("#c-t").val());
+        $(location).attr("href", curr_location + 
+            "?s_low="  + $("#s-r").slider("option", "values")[0] + 
+            "&s_high=" + $("#s-r").slider("option", "values")[1] + 
+            "&c=" + $("#c-t").val() + 
+            "&n=" + $("#n-t").val() + 
+            "&term=" + $("#term").val());
     });
 d3.json("correlations.json", function(error, graph) {
+
+  var keys = Object.keys(graph.links);
+  for (i = 0; i < keys.length; i++) {
+      item = keys[i];
+      $("#term")
+        .append($("<option>", { "value" : item })
+        .text(item));
+    }
+
+  if (term === "none_option" || !(term in graph.links)) return;
+
+  $("#term").val(term);
+  $("#c-t").val(c_threshold);
+  $("#n-t").val(n_threshold);
 
   var width = 1360,
       height = 768;
@@ -82,37 +113,53 @@ d3.json("correlations.json", function(error, graph) {
 
   var linkcolorpos = d3.scale.linear()
   .domain([c_threshold,1])
-  .range(["grey", "red"]);
+  .range(["gray", "red"]);
 
   var linkcolorneg = d3.scale.linear()
   .domain([-1, -c_threshold])
   .range(["blue", "gray"]);
 
   var links = []
-  var min_p = Infinity;
-  var max_p = -Infinity;
+  var min_s = Infinity;
+  var max_s = -Infinity;
 
-  for (var i = 0; i < graph.links.length; i++) {
-    if (graph.links[i].value[1] < p_threshold && Math.abs(graph.links[i].value[0]
-    > c_threshold)) {
-        links[links.length] = graph.links[i];
-        if (graph.links[i].value[1] < min_p) {
-            min_p = graph.links[i].value[1];
+  var min_n = Infinity;
+  var max_n = -Infinity;
+
+  for (var i = 0; i < graph.links[term].length; i++) {
+    var link = graph.links[term][i];
+
+    if (link.value[2] >= n_threshold &&
+        link.value[1] < s_threshold_high && 
+        link.value[1] >= s_threshold_low && 
+        Math.abs(link.value[0] > c_threshold)) {
+
+        links[links.length] = link;
+        if (link.value[1] < min_s) {
+            min_s = link.value[1];
         }
 
-        if (graph.links[i].value[1] > max_p) {
-            max_p = graph.links[i].value[1];
+        if (link.value[1] > max_s) {
+            max_s = link.value[1];
         }
+            
+        if (link.value[2] < min_n) {
+            min_n = link.value[2];
+        }
+
+        if (link.value[2] > max_n) {
+            max_n = link.value[2];
+        }
+
     }
   }
-
   var linkwidth = d3.scale.linear()
-      .domain([min_p, max_p])
-      .range([1, 10]).clamp(true);
+      .domain([n_threshold - 1, max_n])
+      .range([0, 12]).clamp(true);
 
   var force = d3.layout.force()
-      .charge(-120)
-      .linkDistance(120)
+      .charge(-500)
+      .linkDistance(50)
       .size([width, height]);
 
   force
@@ -121,16 +168,19 @@ d3.json("correlations.json", function(error, graph) {
       .start();
 
   var link = svg.selectAll(".link")
-      .data(graph.links)
+      .data(links)
     .enter().append("line")
       .attr("class", "link")
       .style("stroke", function(d) { return (d.value[0] > 0)?
           linkcolorpos(d.value[0]):linkcolorneg(d.value[0])} )
       .style("stroke-width", function(d) { 
-          return linkwidth(d.value[1]);} );
+          return linkwidth(d.value[2]);} );
 
   link.append("title")
-      .text(function(d) { return d.value; });
+    .text(function(d) { return "Correlation: " + d.value[0] + 
+        "\nConfidence Interval (95%): " + d.value[1] + 
+        "\nNumber of data points: " + d.value[2]; });
+    
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
@@ -153,4 +203,28 @@ d3.json("correlations.json", function(error, graph) {
   });
 });
 
+
+  });
 </script>
+</head>
+<body>
+    <center>
+    <div>
+        term : <select id="term"><option value="none_option">Select term...</option></select>
+    </div>
+    <div>
+        correlation-threshold : <input id="c-t" type="range" min="0" max="1"
+        step="0.000001">
+        <span id="c-label">0</span>
+    </div>    
+    <div>
+        required number of data points : <input id="n-t" type="range" min="0" max="30">
+        <span id="n-label">0</span>
+    </div>
+    <div>
+        sensitivity to event removal : <div style="width:50%"id="s-r"></div>
+        <span id="s-label">0</span>
+</div>
+   <button id="update_button">Update graph</button>
+   </center>
+
