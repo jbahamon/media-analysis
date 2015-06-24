@@ -37,7 +37,6 @@ def aggregate_tweets(terms, files):
 
     for filename in files:
         with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
-            print "====================" + filename + "=================="
             parsed_json = json.loads(f.read())
             day =  filename[0:10]
             all_days.add(day)
@@ -45,9 +44,6 @@ def aggregate_tweets(terms, files):
             for tweet in parsed_json:
                 name = tweet["user"]["screen_name"]
                 words = [ normalize_text(x) for x in tweet["text"].split() ]
-
-                if name == "thecliniccl":
-                    print unidecode(tweet["text"])
 
                 for x in [ "+".join(map(str,term)) for term in terms \
                         if any(w in words for w in term) ]:
@@ -72,7 +68,6 @@ def normalize_series(time_series, all_days, threshold):
         prev_value = float(time_series[time_series.keys()[0]])
         del time_series[time_series.keys()[0]]
     except KeyError:
-        print time_series
         return None
 
     for k in sorted(time_series.keys()[1:]):

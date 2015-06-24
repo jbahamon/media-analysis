@@ -8,9 +8,67 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div id="container" class="container">
-        <h1>Temporal correlations for different terms in Chilean Media</h1>
-        <br/>
+    <div id="container" class="container centered">
+        <div class="row">
+            <div class="span4 collapse-group">
+        <h1>Temporal correlations for terms in Chilean Media</h1>
+        </div>
+        </div>
+        <div class="row">
+            <div class="span4 collapse-group">
+                <h3>What is being calculated?
+                    <a class="btn" data-toggle="collapse"
+                        data-target="#calculations">Toggle details &raquo;</a>
+                    </h3>
+                <div id="calculations" class="collapse">
+                <p>
+                A time series for a given outlet starts as the frequency of
+                tweets containing any of the selected terms for each day. These
+                time series are normalized by dividing each frequency by the
+                previous non-zero one. Correlations are then calculated for each
+                pair of time series.
+                </p>
+                <p>
+                Sensitivity to particular events is estimated by calculating
+                correlations when a single day is removed from each time series
+                and repeating this for every day.  This gives a distribution of
+                correlations: the width of the confidence interval for the mean
+                correlation can be seen as a measure of the sensitivity of this
+                mean to particular events.
+                </p>
+                <p>
+                Finally, a graph can be constructed by establishing an edge
+                between two outlets if their correlation, confidence interval
+                width and/or number of non-zero data points satisfy certain
+                constraints.
+                </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span4 collapse-group">
+                <h3>What do colors/sizes mean?
+                <a class="btn" data-toggle="collapse"
+                    data-target="#legend">Toggle details &raquo;</a>
+                </h3>
+                <div id="legend" class="collapse">
+                <ul>
+                    <li> Edge width is proportional to the number of data points: in
+                    other words, the number of days where one of the two outlets
+                    mentioned the term. Currently, data comprises approx. 200 days of
+                    tweets.</li>
+                    <li> Edge color is used to represent correlation values. Negative
+                    correlations are blue, positive correlations are red, and
+                    correlations close to 0 will be grey. </li>
+                    <li>Hovering over a node displays the outlet name; hovering
+                    over an edge shows its correlation value, CI width and number of
+                    data points.</li>
+                    <li>TODO: Show number of followers as node size.</li>
+                </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
         <div class="row">
             <div class="col-md-3">
                 Terms to analyze:
@@ -57,7 +115,8 @@
         </div>
         <br/>
 
-       <center><button id="update_button" type="button" class="btn btn-default">Update graph</button></center>
+       <center><button id="update_button" type="button" class="btn
+               btn-primary">Build graph!</button></center>
    
    </div>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -188,11 +247,11 @@
         
         
           var linkcolorpos = d3.scale.linear()
-          .domain([c_threshold,1])
+          .domain([0,1])
           .range(["gray", "red"]);
         
           var linkcolorneg = d3.scale.linear()
-          .domain([-1, -c_threshold])
+          .domain([-1, 0])
           .range(["blue", "gray"]);
         
           var links = []
