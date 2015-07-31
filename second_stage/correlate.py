@@ -1,6 +1,4 @@
 #!/usr/bin/python
-
-
 import json
 import argparse as ap
 import os, sys
@@ -64,7 +62,7 @@ def get_correlation_confidence(series1, series2):
     else:
         CI_size = 0
         k = 0
-
+    #TODO: return full correlation instead of mean.
     return (mean, CI_size, n)
 
 
@@ -95,8 +93,8 @@ with args.in_file as json_file:
                 for j in [ j for j in range(i + 1, n_names) if names[j] in series ]:
 
                     correlation_confidence = get_correlation_confidence(\
-                            series[names[i]], \
-                            series[names[j]])
+                            series[names[i]][0], \
+                            series[names[j]][0])
 
                     links[term].append( { "source": i, \
                                     "target": j, \

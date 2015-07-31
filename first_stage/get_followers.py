@@ -22,9 +22,8 @@ with open(sys.argv[1]) as news_file:
 
     api = tweepy.API(auth)
 
-    user = api.get_user("tuttikiwi")
     for handle in news_accounts:
 
-	user = api.get_user(handle)
+        user = api.get_user(handle)
     
-	print handle.strip() + " " + str(user.followers_count)
+        print handle.strip() + " " + str(user.followers_count)

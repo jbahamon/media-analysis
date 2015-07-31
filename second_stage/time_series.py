@@ -11,17 +11,23 @@ import math
 
 date_format = "%Y-%m-%d"
 
+def positive_float(x):
+    x = float(x)
+    if x <= 0:
+        raise argparse.ArgumentTypeError("Must be a positive float.")
+    return x
+
 class readable_dir(ap.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir = values
         if not os.path.isdir(prospective_dir):
-            raise ap.ArgumentTypeError(("readable_dir:{0} is not a valid" \
+            raise ap.ArgumentTypeError(("readable_dir:{0} is not a valid " \
                     "path").format(prospective_dir)) 
 
         if os.access(prospective_dir, os.R_OK):
             setattr(namespace, self.dest, prospective_dir)
         else:
-            raise ap.ArgumentTypeError(("readable_dir:{0} is not a" \
+            raise ap.ArgumentTypeError(("readable_dir:{0} is not a " \
             "readable dir".format(prospective_dir)))
 
 # this is enough for now.
@@ -56,30 +62,72 @@ def aggregate_tweets(terms, files):
     return (mentions, total_tweets, all_days)
 
 
-def normalize_series(time_series, all_days, threshold):
+def normalize_series_log(time_series, all_days, threshold, base_add = 1):
+    n_points = len(time_series.items())
 
-    if len(time_series.items()) < threshold:
-        return None
+    if n_points < threshold:
+        return (None, n_points)
+
+
+    for k, v in time_series.items():
+        total_for_day = total_tweets[name][k]
+        time_series[k] = v/float(total_for_day)
+         
+    # we touch every day.
+    for d in all_days:
+        time_series[d] += base_add
+    
+    try:
+        prev_value = float(time_series[time_series.keys()[0]]) 
+        # This deletes it from time_series.
+        del time_series[time_series.keys()[0]]
+    except KeyError:
+        return (None, n_points)
+  
+    for k in sorted(time_series.keys()):
+        current_value = time_series[k]
+        time_series[k] = math.log(current_value) - math.log(prev_value)
+        prev_value = current_value
+
+    return ([ time_series[day] for day in all_days ], n_points)
+
+def normalize_series_nonlog(time_series, all_days, threshold):
+
+    n_points = len(time_series.items())
+
+    if n_points < threshold:
+        return (None, n_points)
+
+    # we change everything into frequencies
     for k, v in time_series.items():
         total_for_day = total_tweets[name][k]
         time_series[k] = v/float(total_for_day)
 
+    # we need to extend everything to cover every day 
+    # we force every day to appear.
+
+    prev_value = 0
+
+    for d in all_days:
+        if time_series[d] != 0:
+            prev_value = time_series[d]
     try:
-        prev_value = float(time_series[time_series.keys()[0]])
+        prev_value = float(time_series[day])
         del time_series[time_series.keys()[0]]
     except KeyError:
-        return None
+        return (None, n_points)
 
-    for k in sorted(time_series.keys()[1:]):
+    for k in sorted(time_series.keys()):
+
         current_value = time_series[k]
-        time_series[k] = current_value/prev_value
-        prev_value = current_value
-        
-    # Finally, we force every day to appear.
-    for day in all_days:
-        days[day]
 
-    return [ time_series[day] for day in all_days ]
+        if current_value != last_value:
+            time_series[k] = current_value - last_value
+            last_value = current_value
+        else:
+            time_series[k] = 0
+       
+    return ([ time_series[day] for day in all_days ], n_points)
 
 parser = ap.ArgumentParser(description = "Computes time series for a" \
     "folder of JSON files containing tweets and a term.")
@@ -91,13 +139,21 @@ parser.add_argument("terms_file", type=ap.FileType("r"),  \
         help = "A file with a single term per line. Time series " \
         "will be created for each term.")
 
+normalizer = parser.add_mutually_exclusive_group(required=True)
+normalizer.add_argument("-l", "--log", nargs="?", const=1, type=positive_float,\
+        help = "Use this value as a additive "\
+        "base to normalize using difference of logarithms.")
+
+normalizer.add_argument("-e", "--ext", action="store_true", help = "Extend "\
+                        "nonzero values and normalize using linear differences.")
+
 parser.add_argument("-t", "--threshold", default=0, type=float, \
         help = "The minimum average tweet-per-day to require. Default is no" \
         "threshold at all.")
 
 parser.add_argument("-m", "--minimum_tweets", default=3, type=float, \
         help = "The minimum number of tweets with a term to require. Defaults to" \
-        " three (less than that would mess up the normalization procedure).")
+        " three (less than this would mess up some normalization procedures).")
 
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the "  \
         "output file.")
@@ -115,7 +171,7 @@ folder = args.folder
 terms = []
 
 with args.terms_file as f:
-    terms = [ set(map(normalize_text, line.split())) for line in f.readlines() ]
+    terms = [ set(line.split()) for line in f.readlines() ]
 
 files = [ filename for filename in os.listdir(folder) \
         if os.path.isfile(os.path.join(folder, filename)) and \
@@ -137,11 +193,15 @@ for term in terms:
             del term_mentions[name]
             continue
 
-        normalized_mentions = normalize_series(days, all_days, \
-                args.minimum_tweets)
+        if args.ext:
+            (normalized_mentions, n) = normalize_series_nonlog(days, all_days, \
+                    args.minimum_tweets)
+        else:
+            (normalized_mentions, n) = normalize_series_log(days, all_days, \
+                    args.minimum_tweets, args.log)
 
         if normalized_mentions is not None:
-            term_mentions[name] = normalized_mentions
+            term_mentions[name] = (normalized_mentions, n)
         else:
             del term_mentions[name]
 
