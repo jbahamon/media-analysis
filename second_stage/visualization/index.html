@@ -96,7 +96,7 @@
                 Minimum number of data points: 
             </div><!--
          --><div class="col-md-3 vcenter">
-                <input id="n-t" type="range" min="0" max="30"/>
+                <input id="n-t" type="range" min="0" max="200"/>
                 <center>
                 <span id="n-label"></span>
                 </center>
@@ -115,9 +115,10 @@
         </div>
         <br/>
 
-       <center><button id="update_button" type="button" class="btn
-               btn-primary">Build graph!</button></center>
-   
+       <center>
+           <button id="update_button" type="button" class="btn
+               btn-primary">Build graph!</button>
+       </center>
    </div>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="./jquery-ui-1.11.4/jquery-ui.min.js"></script>
@@ -186,9 +187,9 @@
             $("#c-label").text(parseFloat($("#c-t").val()).toFixed(3));
         });
         $("#n-t").val(n_threshold);
-        $("#n-label").text(parseFloat(n_threshold).toFixed(3));
+        $("#n-label").text(parseInt(n_threshold));
         $("#n-t" ).on("change input", function() {
-            $("#n-label").text(parseFloat($("#n-t").val()).toFixed(3));
+            $("#n-label").text(parseInt($("#n-t").val()));
         });
 
         
@@ -215,15 +216,22 @@
 
             $(".term-option").click(function(e) {
                 $("#term").data("selected", this.id);
-                $("#drop").text(this.id);
+
+                var text = this.id.length > 35 ? this.id.substr(0, 30) + "..." :
+                    this.id
+
+                $("#drop").text(text);
 
                 $("#drop").append($("<span>", {class:"caret"}));
                 e.preventDefault();
             });
 
           if (term === "none_option" || !(term in graph.links)) return;
-        
-          $("#drop").text(term);
+       
+          
+          var text = term.length > 35 ? term.substr(0, 30) + "..." : term;
+ 
+          $("#drop").text(text);
           $("#drop").append($("<span>", {class:"caret"}));
           $("#term").data("selected", term);
           $("#c-t").val(c_threshold);
@@ -238,18 +246,16 @@
               .attr("class", "text-center");
           
           var graph_data;
-          
-          var size = d3.scale.log()
-                    .domain([])
-                    .range([3, 10]);
-          
           var color = d3.scale.category20();
-        
         
           var linkcolorpos = d3.scale.linear()
           .domain([0,1])
           .range(["gray", "red"]);
         
+          var quantize = d3.scale.threshold()
+              .domain([0, 86158, 137844, 216864, 421117, Infinity])
+              .range([1, 2, 3, 4, 5]);
+
           var linkcolorneg = d3.scale.linear()
           .domain([-1, 0])
           .range(["blue", "gray"]);
@@ -267,7 +273,7 @@
             if (link.value[2] >= n_threshold &&
                 link.value[1] < s_threshold_high && 
                 link.value[1] >= s_threshold_low && 
-                Math.abs(link.value[0] > c_threshold)) {
+                link.value[0] > c_threshold) {
         
                 links[links.length] = link;
                 if (link.value[1] < min_s) {
@@ -288,15 +294,33 @@
         
             }
           }
+       
           var linkwidth = d3.scale.linear()
               .domain([n_threshold - 1, max_n])
-              .range([0, 10]).clamp(true);
+              .range([2, 5]).clamp(true);
         
           var force = d3.layout.force()
-              .charge(-200)
-              .linkDistance(50)
+              .charge(-150)
+              .linkDistance(60)
               .size([width, height]);
-        
+                
+          var min_size = Infinity;
+          var max_size = -Infinity;
+
+          for (var i = 0; i < graph.nodes.length; i++) {
+              var node = graph.nodes[i];
+              if (node.size < min_size) {
+                  min_size = node.size;
+              }
+
+              if (node.size > max_size) {
+                  max_size = node.size;
+              }
+          }
+          
+          var size = d3.scale.log()
+                    .domain([1000, max_size])
+                    .range([5, 20]).clamp([true, false]);
           force
               .nodes(graph.nodes)
               .links(links)
@@ -320,7 +344,7 @@
               .data(graph.nodes)
             .enter().append("circle")
               .attr("class", "node")
-              .attr("r", function(d) { return 10; })
+              .attr("r", function(d) { return size(d.size); })
               .style("fill", function(d) { return color(d.color_value); })
               .call(force.drag);
         
