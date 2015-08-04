@@ -162,8 +162,8 @@
                   .style("stroke", function(d) { return linkcolorpos(d.value);});
 
               link.insert("title")
-                  .text(function(d)  { return "Correlation " + 
-                      d.source.name + "-" + d.target.name + ": " + d.value; });
+                  .text(function(d)  { return "Similarity " + 
+                      d.source.name + " - " + d.target.name + ": " + d.value; });
               link.exit().remove();
 
               force.start();
@@ -191,8 +191,8 @@
                   var link = graph.links[i];
                   if (link.value >= thresh) {
 
-                      graph.nodes[link.source].color_value++;
-                      graph.nodes[link.target].color_value++;
+                      graph.nodes[link.source].color_value += link.value;
+                      graph.nodes[link.target].color_value += link.value;
 
                       var sourceNode = findNode(link.source);
                       var targetNode = findNode(link.target);
