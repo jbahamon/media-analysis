@@ -336,8 +336,8 @@
                   return linkwidth(d.value[2]);} );
         
           link.append("title")
-            .text(function(d) { return "Correlation: " + d.value[0] + 
-                "\nConfidence Interval (95%): " + d.value[1] + 
+            .text(function(d) { return "Correlation: " + d.value[0].toFixed(4) + 
+                "\nConfidence Interval (95%): " + d.value[1].toFixed(4) + 
                 "\nNumber of data points: " + d.value[2]; });
             
           var node = svg.selectAll(".node")
