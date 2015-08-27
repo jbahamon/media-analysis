@@ -49,20 +49,8 @@ parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print 
 parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdout, help = \
     "The file to be output. If not specified, the standard output will be used.")
 
-parser.add_argument( "term", type=str, help = \
-        "The term to cluster for.")
-
-parser.add_argument( "min_points", type=int, default=1, help = \
-        "The minimum number of data points to allow.")
-
-parser.add_argument( "min_correlation", type=float,0, help = \
-        "The minimum correlation to allow.")
-
-parser.add_argument( "min_sensitivity", type=float,0, help = \
-        "The minimum sensitivity to allow.")
-
-parser.add_argument( "max_sensitivity", type=float, default=2, help = \
-        "The maximum sensitivity to allow.")
+parser.add_argument( "min_weight", type=float, default=0, help = \
+        "The minimum edge weight to allow.")
 
 parser.add_argument("N", metavar="number_of_communities", type=positive_int, default=sys.stdin, help = \
         "The number of communities to find.")
@@ -77,34 +65,28 @@ with args.in_file as json_file:
     with args.out_file as out_file: 
         parsed_json = json.loads(json_file.read())
         
-        min_points      = args.min_points
-        min_correlation = args.min_correlation
-        max_sensitivity = args.max_sensitivity
-        min_sensitivity = args.min_sensitivity
+        min_weight = args.min_weight
 
         G = ig.Graph()
         chosen_nodes = []
         chosen_edges = []
 
-        for edge in parsed_json["links"][args.term]:
-            if edge["value"][0] > min_correlation and \
-                    edge["value"][1] >= min_sensitivity and\
-                    edge["value"][1] < max_sensitivity and\
-                    edge["value"][2] >= min_points:
-                    chosen_edges.append(edge)
-                    chosen_nodes.append(edge["source"])
-                    chosen_nodes.append(edge["target"])
+        for edge in parsed_json["links"]:
+            if edge["value"] > min_weight:
+                chosen_edges.append(edge)
+                chosen_nodes.append(edge["source"])
+                chosen_nodes.append(edge["target"])
 
         
         node_to_index = { k:v for (k,v) in enumerate(set(chosen_nodes)) }
         index_to_node = { v:k for (k,v) in enumerate(set(chosen_nodes)) }
 
         weights = []
-        min_weight = min([ edge["value"][0] for edge in chosen_edges ])
+        min_weight = min([ edge["value"] for edge in chosen_edges ])
         for i, edge in enumerate(chosen_edges):
             chosen_edges[i] = (index_to_node[edge["source"]],
                     index_to_node[edge["target"]])
-            weights.append(edge["value"][0] - min_weight)
+            weights.append(edge["value"] - min_weight)
 
         g = ig.Graph(n = len(node_to_index), edges=chosen_edges, directed=False)
         g.es["weight"] = weights
@@ -113,15 +95,12 @@ with args.in_file as json_file:
         assignments = clusterings.as_clustering(args.N).membership
         for node in parsed_json["nodes"]:
             try:
-                node["color_value"] = assignments[index_to_node[node["index"]]] + 1
+                node["color_value"] = assignments[index_to_node[node["index"]]] + 2
             except KeyError:
                 node["color_value"] = 0
 
-        parsed_json["links"] = parsed_json["links"][args.term]
-        parsed_json["min_n"] = min_points
-        parsed_json["min_corr"] = min_correlation
-        parsed_json["min_sens"] = min_sensitivity
-        parsed_json["max_sens"] = max_sensitivity
+        parsed_json["links"] = parsed_json["links"]
+        parsed_json["min_weight"] = min_weight
 
         if args.pretty:
             out_file.write(json.dumps( parsed_json, \

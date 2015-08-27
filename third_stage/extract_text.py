@@ -30,11 +30,11 @@ shorten = re.compile(r"\s+")
 normalize_text = lambda text: shorten.sub(" ", (replace.sub(" ", \
         remove.sub("", unidecode(text).lower())))).strip()
 
-def gather_tweets(filename, tweets):
+def gather_tweets(filename, out_file):
     with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
         parsed_json = json.loads(f.read())
         for tweet in parsed_json:
-            tweets[tweet["user"]["screen_name"]].append(normalize_text(tweet["text"]))
+            out_file.write(normalize_text(tweet["text"]) + "\n")
 
 def tokenize(text):
     return nltk.tokenize.word_tokenize(text)
@@ -45,9 +45,6 @@ parser = ap.ArgumentParser(description = "Extract tweet text " \
 parser.add_argument("folder", action=readable_dir, help = \
         "The folder to read JSON files from.")
 
-parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the "  \
-        "output file.")
-
 parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdout, help = \
     "The file to be output. If not specified, the standard output will be used.")
 
@@ -55,51 +52,11 @@ args = parser.parse_args()
 
 folder = args.folder
 
-tweets = defaultdict(list)
-
 files = [ filename for filename in os.listdir(folder) \
         if os.path.isfile(os.path.join(folder, filename)) and \
         os.access(os.path.join(folder, filename), os.R_OK) and filename.endswith(".json") ]
 
-for f in files:
-    gather_tweets(f, tweets)
-
-for k, v in tweets.items():
-    tweets[k] = " ".join(v)
-
-names = tweets.keys()
-news_data = tweets.values()
-
-vectorizer = TfidfVectorizer(tokenizer=tokenize,
-        stop_words=nltk.corpus.stopwords.words('spanish'))
-
-tfidfs = vectorizer.fit_transform(news_data)
-
-sims = ((tfidfs * tfidfs.T).A)
-
-out_arr = []
-
-number_of_sources = len(names)
-
-out_names = []
-for i, name in enumerate(names):
-    out_names.append({
-        "index": i,
-        "name" : name,
-        "size" : 10})
-
-
-
-for i in xrange(number_of_sources):
-    for j in xrange(i + 1, number_of_sources):
-        out_arr.append({
-            "source": i,
-            "target"  : j,
-            "value": sims[i,j] }
-            )
-
 with args.out_file as out_file:
-    out_file.write(json.dumps({
-        "nodes" : out_names,
-        "links" : out_arr },
-        indent = 4, separators = (",", ":")))
+    for f in files:
+        gather_tweets(f, out_file)
+
