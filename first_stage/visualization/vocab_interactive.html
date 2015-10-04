@@ -11,7 +11,7 @@
     <div class="container centered">
         <div class="row">
             <div class="span4 collapse-group">
-                <center><h1>Vocabulary similarity graph for Chilean News Outlets
+                <center><h1>Vocabulary similarity graph for Chilean news outlets
                         in Twitter</h1>
                 </center>
                 <br/>
@@ -21,6 +21,57 @@
             <div class="col-md-3">
             </div>
             <div class="col-md-6">
+            <div class="row">
+            <div class="span4 collapse-group">
+                <h3>What is being calculated?
+                    <a class="btn" data-toggle="collapse"
+                        data-target="#calculations">Toggle details &raquo;</a>
+                    </h3>
+                <div id="calculations" class="collapse">
+                    <p>
+                    Each media outlet is described by the frequency of use of every
+                    word in the content it emits.
+                    </p>
+                    <p>
+                    Two outlets can then be considered to be similar or not based on
+                    these descriptions.
+                    </p>
+                    <p>
+                    Finally, a graph can be constructed by establishing an edge
+                    between two outlets if their similarity is high enough.
+                    Therefore, media outlets that use similar words will be
+                    connected.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span4 collapse-group">
+                <h3>What do colors/sizes mean?
+                <a class="btn" data-toggle="collapse"
+                    data-target="#legend">Toggle details &raquo;</a>
+                </h3>
+                <div id="legend" class="collapse">
+                <ul>
+                    <li> Edge color is used to represent similarity values. A
+                        grey edge represents a low similarity; a red edge
+                        represents high similarity.
+                    </li>
+                    <li>Hovering over a node displays the outlet's name; hovering
+                    over an edge shows the similarity between the outlets it
+                    connects.</li>
+                    <li>A bigger node size stands for a greater number of
+                        followers.</li>
+                    <li>The most connected node is always black (unless there
+                        are no connections). Nodes with no connections are
+                        always white. A linear scale between these two is used
+                        to fill the rest of the nodes.</li>
+                </ul>
+                </div>
+            </div>
+        </div>
+        <br/>
+
                 <div class="row">
                     <div class="col-md-6">
                         Minimum vocabulary similarity:
@@ -35,8 +86,6 @@
                         <center><span id="slider-label">1</span></center>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
             </div>
         </div>
         <div class="col-md-12 text-center" id="container">
@@ -59,7 +108,7 @@
 
     .link {
       stroke: #000000;
-      stroke-width: 5px;
+      stroke-width: 3px;
     }
 
     </style>

@@ -36,8 +36,8 @@ def positive_int(string):
         raise argparse.ArgumentTypeError(msg)
     return value
 
-parser = ap.ArgumentParser(description = "Computes correlations for a " \
-    "JSON file containing time series for a term.")
+parser = ap.ArgumentParser(description = "Clusters communities" \
+    "from a JSON file containing graph edges for terms.")
 
 parser.add_argument( "-i", "--in_file", type=ap.FileType("r"), default=sys.stdin, help = \
         "The JSON file to read time series from. If not specified, standard " \
@@ -52,16 +52,16 @@ parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdou
 parser.add_argument( "term", type=str, help = \
         "The term to cluster for.")
 
-parser.add_argument( "min_points", type=int, default=1, help = \
+parser.add_argument( "-m", "--min_points", type=int, default=1, help = \
         "The minimum number of data points to allow.")
 
-parser.add_argument( "min_correlation", type=float,0, help = \
+parser.add_argument( "-c", "--min_correlation", type=float,default=0, help = \
         "The minimum correlation to allow.")
 
-parser.add_argument( "min_sensitivity", type=float,0, help = \
+parser.add_argument( "-sl", "--min_sensitivity", type=float,default=0, help = \
         "The minimum sensitivity to allow.")
 
-parser.add_argument( "max_sensitivity", type=float, default=2, help = \
+parser.add_argument( "-sh", "--max_sensitivity", type=float, default=2, help = \
         "The maximum sensitivity to allow.")
 
 parser.add_argument("N", metavar="number_of_communities", type=positive_int, default=sys.stdin, help = \

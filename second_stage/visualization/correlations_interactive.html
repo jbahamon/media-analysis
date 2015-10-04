@@ -11,8 +11,8 @@
     <div class="container centered">
         <div class="row">
             <div class="span4 collapse-group">
-                <center><h1>Temporal correlations for terms in Chilean News
-                        Outlets in Twitter</h1>
+                <center><h1>Temporal correlations for terms in Chilean news
+                        outlets in Twitter</h1>
                 </center>
             </div>
         </div>
@@ -24,8 +24,7 @@
                     <a class="btn" data-toggle="collapse"
                         data-target="#calculations">Toggle details &raquo;</a>
                     </h3>
-                <div id="calculations" class="collapse">
-                <p>
+                    <p>
                 A time series for a given outlet starts as the frequency of
                 tweets containing any of the selected terms for each day. These
                 time series are normalized by dividing each frequency by the
@@ -44,7 +43,8 @@
                 Finally, a graph can be constructed by establishing an edge
                 between two outlets if their correlation, confidence interval
                 width and/or number of non-zero data points satisfy certain
-                constraints.
+                constraints. Therefore, media outlets that touch on the selected
+                topic at the same time will be connected.
                 </p>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                     <li>Hovering over a node displays the outlet name; hovering
                     over an edge shows its correlation value, CI width and number of
                     data points.</li>
-                    <li>A bigger node size stands for a bigger number of
+                    <li>A bigger node size stands for a greater number of
                         followers.</li>
                     <li>The most connected node is always black (unless there
                         are no connections). Nodes with no connections are
@@ -75,22 +75,6 @@
                         to fill the rest of the nodes.</li>
                 </ul>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-8">
-                Terms to analyze:
-                <a id="drop" href="#" class="dropdown-toggle text-center"
-                    data-toggle="dropdown" role="button"
-                    aria-haspopup="true" aria-expanded="false">
-                    Select terms...
-                    <span class="caret"></span></a>
-                <ul class="dropdown-menu" id="term">
-                </ul>
-            </div>
-            <div class="col-md-4">
-               <button id="update_button" type="button" class="btn
-                   btn-primary">Load term graph</button>
             </div>
         </div>
         <br/>
@@ -157,25 +141,6 @@
     <script>
 
       $(function() {
-
-        $.urlParam = function(name){
-            var results = new RegExp('[\?&]' + name +
-            '=([^&#]*)').exec(window.location.href);
-            if (results==null){
-                return null;
-            }
-            else{
-                return results[1] || 0;
-            }
-        }
-        var term = ($.urlParam("term") !== null)?
-            $.urlParam("term"):"none_option";
-
-        $("#update_button").click(function(e) {
-            var curr_location = location.protocol + '//' + location.host + location.pathname;
-            $(location).attr("href", curr_location + 
-                "?term=" + $("#term").data("selected"));
-        });
 
         d3.json("correlations.json", function(error, graph) {
         
