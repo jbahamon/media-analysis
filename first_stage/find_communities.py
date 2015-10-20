@@ -99,7 +99,6 @@ with args.in_file as json_file:
             except KeyError:
                 node["color_value"] = 0
 
-        parsed_json["links"] = parsed_json["links"]
         parsed_json["min_weight"] = min_weight
 
         if args.pretty:
