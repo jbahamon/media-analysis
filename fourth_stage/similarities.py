@@ -27,13 +27,15 @@ with args.in_file as in_file:
 
 similarities = dict()
 for o1, o2 in combinations(outlet_sets.keys(), 2):
-    similarities[(o1, o2)] = float(len(outlet_sets[o1] & outlet_sets[o2])) / \
-                             float(len(outlet_sets[o1] | outlet_sets[o2]))
+    similarities[(o1, o2)] = (float(len(outlet_sets[o1] & outlet_sets[o2])) / \
+                              max(len(outlet_sets[o1]), len(outlet_sets[o2])),
+                              float(len(outlet_sets[o1] & outlet_sets[o2])))
 
 name_to_index = { v : k for k, v in enumerate(outlet_sets.keys()) }
 
-nodes = [ { "index": name_to_index[name], "name" : name, "size":10 } for name in
-        outlet_sets.keys() ]
+nodes = [ { "index": name_to_index[name], "name" : name,
+            "size":len(followers) } for name, followers in
+            outlet_sets.iteritems() ]
 
 links = []
 

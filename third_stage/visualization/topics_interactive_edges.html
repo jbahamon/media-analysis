@@ -227,12 +227,12 @@
 
               link.enter().append("line", ".node")
                   .attr("class", "link")
-                  .style("stroke", function(d) { return linkcolorpos(d.value[2]) } )
+                  .style("stroke", function(d) { return linkcolorpos(d.value[0]) } )
                   .style("stroke-width", function(d) { 
                       return 3;} );
 
               link.insert("title")
-                  .text(function(d) { return "Median similitude: " + d.value[2]
+                  .text(function(d) { return "Median similitude: " + d.value[0]
                       + "\nKurtosis: " + d.value[1].toFixed(4)});
               link.exit().remove();
             
@@ -265,7 +265,7 @@
 
                       added_edges += 1;
                       
-                      if (added_edges > n_edges) {
+                      if (added_edges > n_edges || link.values[0] == 0) {
                         break;
                       }
 

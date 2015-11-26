@@ -33,25 +33,26 @@ class readable_dir(ap.Action):
             "readable dir".format(prospective_dir)))
 
 remove = re.compile(r"\b\S{1,2}\b|#\S+|@\w+|\bhttps?\S+\b")
-replace = re.compile(r"\s+|[!\"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~]")
+replace = re.compile(r"\s+|[!\"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~-]")
 shorten = re.compile(r"\s+")
 
 normalize_text = lambda text: shorten.sub(" ", (replace.sub(" ", \
         remove.sub("", unidecode(text).lower())))).strip()
 
-stop_words = set(map(normalize_text, stopwords.words("spanish")))
+stop_words = set(map(normalize_text, stopwords.words("spanish"))) | set(["via",
+"dia", "uso", "foto", "fotos", "video", "chile", "2015", "2014", "ver", "tras",
+"galeria", "informate", "registrate","http", "hoy", "lunes", "martes",
+"miercoles", "jueves", "viernes", "sabado", "domingo", "enero",
+"febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+"octubre", "noviembre", "diciembre", "vivo", "ahora"] )
 
 def filter_names(files) :
 
     names = defaultdict(float)
-
+    days = set()
     for filename in files:
         with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
-            try:
-                if day != last_day:
-                    n_days += 1
-            except NameError:
-                n_days = 1
+            days.add(filename[0:10])
 
             parsed_json = json.loads(f.read())
 
@@ -59,7 +60,7 @@ def filter_names(files) :
                 name = tweet["user"]["screen_name"]
                 names[name] += 1
 
-    return [ k for k, v in names.iteritems() if v/n_days >= MIN_TWEETS_PER_DAY]
+    return [ k for k, v in names.iteritems() if float(v)/len(days) >= MIN_TWEETS_PER_DAY]
 
 
 def get_tweets_keywords(filenames):
@@ -85,8 +86,17 @@ def aggregate_tweets(files) :
     chosen_names = filter_names(files)
     similarities = defaultdict(list)
     days = []
+
+    if COUNT_KEYWORDS:
+        keyword_count = defaultdict(lambda : defaultdict(int))
+    else:
+        keyword_count = None
+
     for day, filenames in groupby(sorted(files), lambda filename: filename[0:10]):
         days.append(day)
+
+        if VERBOSE:
+            sys.stderr.write(day + "\n" )
 
         (day_tweets, day_keywords) = get_tweets_keywords(filenames)
         """
@@ -100,13 +110,17 @@ def aggregate_tweets(files) :
         
         """
 
-        tf_idf = get_tf_idf(day_tweets, day_keywords, chosen_names)
+        tf_idf = get_tf_idf(day_tweets, day_keywords, chosen_names,
+                keyword_count)
 
         for n1, n2 in combinations(chosen_names, 2):
             pair_similarity = similarity(tf_idf[n1], tf_idf[n2])
             similarities[n1 + " " + n2].append(pair_similarity)
 
-    return (chosen_names, similarities, days)
+    if COUNT_KEYWORDS:
+        return (chosen_names, similarities, days, keyword_count)
+    else:
+        return (chosen_names, similarities, days)
 
 def compare(e1, e2):
     """
@@ -133,34 +147,33 @@ def get_keywords(list_of_tweets):
 def get_maxtf_idf(hourly_topics, keywords):
     maxtf_idf = dict()
 
-    N = len(hourly_topics)
+    N = float(len(hourly_topics))
     hourly_keywords = map(lambda x: tuple(chain.from_iterable(x)),
             hourly_topics)
 
-    # maximum frequency of any word for the given hour
+    # maximum frequency of any word for every given hour
     # FIXME this gives us a vector of values. how do we convert it to a
     # score? using its vector length? <- using this atm
-
-    f2 =  [ max(sum(word in topic for topic in hour) for word in hour_keywords)
-            for hour, hour_keywords in zip(hourly_topics, hourly_keywords) if
-            len(hour_keywords) > 0 ]
-
+    f2 = [ max(sum(word in topic for topic in hour_topics)/float(len(hour_topics))
+                for word in hour_keywords)
+            for hour_topics, hour_keywords in zip(hourly_topics, hourly_keywords) 
+            if len(hour_keywords) > 0 ]
+        
     for word in keywords:
         # maximum number of topics the word appears in for any hour
-        f1 = max(map(lambda hour: sum(word in topic for topic in hour),
-                hourly_topics))
-
+        f1 = max(map(lambda hour: sum(word in topic for topic in
+            hour)/float(max(1,len(hour))), hourly_topics))
         idf = log(N/sum(word in hour for hour in hourly_keywords))
         
-        maxtf_idf[word] = norm([( 0.5 + 0.5 * f1 / f2_i ) * idf for f2_i in f2 ])
+        maxtf_idf[word] = average([( 0.5 + 0.5 * f1 / f2_i ) * idf for f2_i in f2 ])
 
     return maxtf_idf
 
-def get_tf_idf(tweets, topic_keywords, names):
+def get_tf_idf(tweets, topic_keywords, names, keyword_count = None):
 
     hourly_topics = map(lambda hour: map(lambda topic: tuple(map(lambda kw:
         kw[0], topic)), hour), topic_keywords)
-    
+
     day_topics = map(lambda topic: tuple(map(lambda keyword: keyword[0], topic)),
             chain.from_iterable(topic_keywords))
 
@@ -176,35 +189,48 @@ def get_tf_idf(tweets, topic_keywords, names):
     for topic in day_topics:
         edges.update((p1, p2) for p1, p2 in combinations(topic, 2))
 
-
     g.add_edges(edges)
 
     # Idea: what if we use strongly-connected components?
-    components = g.decompose(mode=ig.WEAK)
+    components = g.decompose(mode=ig.STRONG)
 
     for component in components:
-        
+        if len(component.vs) <= 2*KEYWORDS_PER_TOPIC:
+            continue
+
         component_words = sorted(component.vs["name"], key= lambda x:
                 maxtf_idf[x])
-
+        
         for word in component_words:
-
+            print 
             if word in component.vs(component.articulation_points())["name"]:
+                if VERBOSE:
+                    sys.stderr.write("deleting " + word + "\n")
                 component.delete_vertices(word)
                 g.delete_vertices(word)
+                all_keywords.discard(word)
             else: 
                 break
-    
-    event_components = g.components(mode=ig.WEAK)
+        
+    event_components = g.components(mode=ig.STRONG)
     event_membership = event_components.membership
+
+    if VERBOSE:
+        sys.stderr.write("".join([ "\t" + " ".join(map(lambda z:
+            g.vs.find(z)["name"], x)) + "\n" for x
+            in event_components ]))
     n_events = len(event_components)
    
     tf = dict()
 
+    if keyword_count is not None:
+        daily_keyword_count = defaultdict(lambda : defaultdict(float))
+        kw_idfs = defaultdict(set)
+
     for name in names:
 
         outlet_tweets = [ d[1] for d in tweets if d[0] == name ]
-        total_tweeets = float(len(outlet_tweets))
+        total_tweets = float(len(outlet_tweets))
 
         # don't panic.
         # we count how many tweets touch on a given event. we repeat this
@@ -216,22 +242,57 @@ def get_tf_idf(tweets, topic_keywords, names):
         for tweet in outlet_tweets:
             tweet_keywords = tweet & all_keywords
 
+            if keyword_count is not None:
+                touched_keywords = set()
+
+               
             tfs = [0] * n_events
 
             for k1, k2 in combinations(tweet_keywords, 2):
                 try:
                     if g.are_connected(k1, k2):
-                        tfs[event_membership[g.vs.find(name=k1).index]] = 1
+                        tfs[event_membership[g.vs.find(name=k1).index]] = 1.0/total_tweets
+                        if keyword_count is not None:
+                            touched_keywords.add(k1)
+                            touched_keywords.add(k2)
+
+                            kw_idfs[k1].add(name)
+                            kw_idfs[k2].add(name)
+
                 except ValueError:
                     pass
             tf[name] = map(sum, zip(tf[name], tfs))
 
+            if keyword_count is not None:
+                for kw in touched_keywords:
+                    daily_keyword_count[name][kw] += 1.0/total_tweets
+
+        
+        if REVERSE_FREQUENCIES:
+            tf[name] = map(lambda x: 1 -x, tf[name])
     # now we compute idf
 
     N = float(len(names))
 
-    idf = [ log(N/(sum(tf[name][i] > 0 for name in names)
-        + 1)) for i in xrange(n_events) ]
+    if not REVERSE_FREQUENCIES:
+        idf = [ log(N/(sum(tf[name][i] > 0 for name in names) + 1)) for i in xrange(n_events) ]
+    else:
+        idf = [ log(N/(sum(tf[name][i] for name in names))) for i in xrange(n_events) ]
+
+    if keyword_count is not None:
+        kw_idfs = { kw: log(N/(sum(keyword_count[name][kw] > 0 for name in
+            names) + 1)) for kw in all_keywords }
+        for name in names:
+            for kw in daily_keyword_count[name].keys():
+                daily_keyword_count[name][kw] *= kw_idfs[kw]
+
+            magnitude = norm(daily_keyword_count[name].values())
+
+            if magnitude is 0:
+                magnitude = 1.0
+            
+            for kw, val in daily_keyword_count[name].iteritems():
+                keyword_count[name][kw] += val/magnitude
 
     tf_idf = dict()
 
@@ -240,10 +301,12 @@ def get_tf_idf(tweets, topic_keywords, names):
             tf[name][i] *= idf[i]
 
         magnitude = norm(tf[name])
-        if magnitude > 0:
-            tf_idf[name] = [ t/magnitude for t in tf[name] ]
-        else:
-            tf_idf[name] = tf[name]
+        
+        if magnitude == 0.0:
+            magnitude = 1.0
+
+        tf_idf[name] = [ t/magnitude for t in tf[name] ]
+
 
     return tf_idf
 
@@ -251,11 +314,14 @@ def similarity(tf1, tf2):
     return sum( v1 * v2 for (v1, v2) in zip(tf1, tf2) )
 
 
-parser = ap.ArgumentParser(description = "Computes time series for a" \
+parser = ap.ArgumentParser(description = "Computes topic-based similarities for a " \
     "folder of JSON files containing tweets and a term.")
 
 parser.add_argument("folder", action=readable_dir, help = \
         "The folder to read JSON files from.")
+
+parser.add_argument("-c", "--count_keywords", action="store_true", \
+        help = "Enable keyword count for each media outlet.")
 
 parser.add_argument("-t", "--threshold", default=0, type=float, \
         help = "The minimum average tweet-per-day to require. Default is no" \
@@ -267,6 +333,12 @@ parser.add_argument("-k", "--keywords_per_topic", default=2, type=int, \
 parser.add_argument("-d", "--topics_per_hour", default=0, type=int, \
         help = "Number of topics per hour. Default is 6")
 
+parser.add_argument("-v", "--verbose", action="store_true",
+        help = "Whether to print the computed topics.")
+
+parser.add_argument("-r", "--reverse_frequencies", action="store_true",
+        help = "Reverse topic frequencies when calculating descriptors.")
+
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the "  \
         "output file.")
 
@@ -276,15 +348,21 @@ parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdou
 args = parser.parse_args()
 
 folder = args.folder
+COUNT_KEYWORDS = args.count_keywords
 MIN_TWEETS_PER_DAY = args.threshold
 KEYWORDS_PER_TOPIC = args.keywords_per_topic
 MAX_TOPICS_PER_HOUR = args.topics_per_hour
+REVERSE_FREQUENCIES = args.reverse_frequencies
+VERBOSE = args.verbose
 
 files = [ filename for filename in os.listdir(folder) \
         if os.path.isfile(os.path.join(folder, filename)) and \
         os.access(os.path.join(folder, filename), os.R_OK) and filename.endswith(".json") ]
 
-(chosen_names, similarities, days) = aggregate_tweets(files)
+if COUNT_KEYWORDS:
+    (chosen_names, similarities, days, keyword_count) = aggregate_tweets(files)
+else:
+    (chosen_names, similarities, days) = aggregate_tweets(files)
 
 name_to_index = { v : k for k, v in enumerate(chosen_names) }
 
@@ -301,17 +379,17 @@ for k, v in similarities.iteritems():
     links.append( { "source": name_to_index[k.split()[0]],
                     "target": name_to_index[k.split()[1]],
                     "values" : [ sim_avg, kurt, sim_median ]  } )
+output = { "nodes": nodes, 
+           "links" : links,
+           "days" : days }
+
+if COUNT_KEYWORDS:
+    output["keyword_count"] = keyword_count
 
 with args.out_file as out_file:
 
     if args.pretty:
-        out_file.write(json.dumps( \
-                { "nodes": nodes, 
-                  "links" : links,
-                  "days" : days },
+        out_file.write(json.dumps(output,
             indent = 4, separators = (",", ":" )))
     else:
-        out_file.write(json.dumps( \
-                { "nodes": nodes, 
-                    "links" : links,
-                    "days" : days }))
+        out_file.write(json.dumps(output))

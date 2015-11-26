@@ -31,9 +31,9 @@ def normalize_series(time_series, args):
     for k, current_value in enumerate(time_series):
 
         if args.ext:
-            if current_value != last_value:
-                time_series[k] = current_value - last_value
-                last_value = current_value
+            if current_value != prev_value:
+                time_series[k] = current_value - prev_value
+                prev_value = current_value
             else:
                 time_series[k] = 0
         else:

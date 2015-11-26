@@ -5,9 +5,11 @@ import argparse as ap
 import os, sys
 from collections import defaultdict
 from unidecode import unidecode
-import string, codecs, re, nltk
+import string, codecs, re
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+from itertools import combinations
 
 class readable_dir(ap.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -33,11 +35,13 @@ normalize_text = lambda text: shorten.sub(" ", (replace.sub(" ", \
 def gather_tweets(filename, tweets):
     with codecs.open(os.path.join(folder, filename), "r", "utf-8") as f:
         parsed_json = json.loads(f.read())
+
         for tweet in parsed_json:
             tweets[tweet["user"]["screen_name"]].append(normalize_text(tweet["text"]))
+        return len(parsed_json)
 
 def tokenize(text):
-    return nltk.tokenize.word_tokenize(text)
+    return word_tokenize(text)
 
 parser = ap.ArgumentParser(description = "Extract tweet text " \
     "from a folder of JSON files containing tweets.")
@@ -66,14 +70,15 @@ files = [ filename for filename in os.listdir(folder) \
         if os.path.isfile(os.path.join(folder, filename)) and \
         os.access(os.path.join(folder, filename), os.R_OK) and filename.endswith(".json") ]
 
+i = 0
 for f in files:
-    gather_tweets(f, tweets)
+    i += gather_tweets(f, tweets)
 
 for k, v in tweets.items():
     n_tweets = len(v)
-    sys.stderr.write(k + " " + str(n_tweets) + "\n")
+    # sys.stderr.write(k + " " + str(n_tweets) + "\n")
     if n_tweets < args.min_tweets:
-        sys.stderr.write(k)
+        #sys.stderr.write(k)
         del tweets[k]
     else:
         tweets[k] = " ".join(v)
@@ -81,8 +86,11 @@ for k, v in tweets.items():
 names = tweets.keys()
 news_data = tweets.values()
 
+stop_words = set(map(normalize_text, stopwords.words("spanish"))) | set(["via", "dia", "uso", "fotos", "foto", "video", "chile", "2015", "2014", "ver", "tras", "galeria", "informate", "registrate","http"] )
+
+
 vectorizer = TfidfVectorizer(tokenizer=tokenize,
-        stop_words=nltk.corpus.stopwords.words('spanish'))
+        stop_words=stop_words)
 
 tfidfs = vectorizer.fit_transform(news_data)
 
@@ -100,17 +108,21 @@ for i, name in enumerate(names):
         "size" : 10})
 
 
-
-for i in xrange(number_of_sources):
-    for j in xrange(i + 1, number_of_sources):
-        out_arr.append({
-            "source": i,
-            "target"  : j,
-            "value": sims[i,j] }
-            )
+for i, j in combinations(xrange(number_of_sources), 2):
+    out_arr.append({
+        "source": i,
+        "target"  : j,
+        "value": sims[i,j] }
+        )
 
 with args.out_file as out_file:
-    out_file.write(json.dumps({
-        "nodes" : out_names,
-        "links" : out_arr },
-        indent = 4, separators = (",", ":")))
+    if args.pretty:
+        out_file.write(json.dumps({
+            "nodes" : out_names,
+            "links" : out_arr },
+            indent = 4, separators = (",", ":")))
+    else:
+        out_file.write(json.dumps({
+            "nodes" : out_names,
+            "links" : out_arr }))
+

@@ -11,11 +11,12 @@
     <div class="container centered">
         <div class="row">
             <div class="span4 collapse-group">
-                <center> <h1>Example of community detection for "corrupcion+penta+udi"</h1>
+                <center> <h1>Example of community detection for
+                        "mapuche+araucania+mapuches"</h1>
                 </center>
                 <br/>
             <p>This was built using a minimum of 2 data points, a minimum
-            correlation of 0.231 and no restrictions on the sensitivity to singular
+            correlation of 0.174 and no restrictions on the sensitivity to singular
             events.</p>
             </div>
         </div>
@@ -128,7 +129,7 @@
        
           var linkwidth = d3.scale.linear()
               .domain([graph.min_n - 1, max_n])
-              .range([2, 5]).clamp(true);
+              .range([2, 20]).clamp(true);
         
           var force = d3.layout.force()
               .charge(-150)

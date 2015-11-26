@@ -23,7 +23,7 @@
             <div class="col-md-6">
                 <div class="row">
                     <div class="col-md-6">
-                        Maximum number of edges:
+                        Maximum amount of edges:
                     </div>
                     <div class="col-md-6">
                         <input type="range" id="slider"
@@ -39,10 +39,12 @@
             <div class="col-md-3">
             </div>
         </div>
-        <div class="col-md-12 text-center" id="container">
+        <div class="col-md-6 text-center" id="word-cloud">
+        </div>
+        <div class="col-md-6 text-center" id="container">
         </div>
     </div>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.js"></script>
     <script src="./jquery-ui-1.11.4/jquery-ui.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <style>
@@ -54,7 +56,6 @@
     
     .node {
       stroke: #000000;
-      stroke-width: 0.5px;
     }
 
     .link {
@@ -64,13 +65,14 @@
 
     </style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="js/d3.layout.cloud.js"></script>
     <script>
 
       $(function() {
         
         d3.json("vocab_communities.json", function(error, graph) {
        
-          var width = 800,
+          var width = 600,
               height = 600;
          
         
@@ -78,13 +80,15 @@
           .domain([0,1])
           .range(["gray", "red"]);
 
-          graph.links.sort(function(a, b) { return b.value - a.value; } );
           var nodes = graph.nodes;
           var links = [];
+          graph.links.sort(function(a, b) { 
+              return (b.value -
+                      a.value);});
 
           var force = d3.layout.force()
               .charge(-150)
-              .gravity(0.1)
+              .gravity(0.2)
               .linkDistance(60)
               .size([width, height])
               .nodes(nodes)
@@ -132,7 +136,8 @@
           node.enter().append("circle")
               .attr("class", function (d) { return "node " + d.index; })
               .attr("r", function(d) { return size(d.size); })
-              .call(force.drag);
+              .call(force.drag)
+              .on("click", function(d) { drawUpdate(d.color_value) });
 
           node.insert("title")
               .text(function(d) { return d.name });
@@ -161,11 +166,7 @@
           }
 
           var slider = $("#slider");
-          slider.attr("min", 0);
-          slider.attr("max", 8 * graph.nodes.length);
-          slider.attr("step", 1);
-          slider.attr("value", graph.nodes.length);
-          $("#slider-label").text(graph.nodes.length);
+          //adjust threshold
 
           var findNode = function (id) {
               for (var i=0; i < nodes.length; i++) {
@@ -174,16 +175,96 @@
               };
           }
 
+          words = [] 
+          $.each(graph.words["1"],
+                  function(key, value) {
+                      words.push({
+                          "text": key,
+                          "size": value
+                      })});
+
+          var textsize = d3.scale.linear()
+              .domain([0,1])
+              .range([30, 60]);
+
+          var layout = d3.layout.cloud().size([600,600])
+              .words(words)
+              .padding(5)
+              .rotate(0)
+              .font("Impact")
+              .fontSize(function(d) { return d.size; })
+              .on("end", draw)
+              .start();
+
+          g = d3.select("#word-cloud").append("svg")
+                .attr("width", 600)
+                .attr("height", 600)
+                .append("g")
+
+          function draw(words) {
+            d3.select("#word-cloud").select("svg") .selectAll("g").remove()
+
+            d3.select("#word-cloud").select("svg") .append("g")
+            .attr("transform", "translate(300,300)") .selectAll("text")
+            .data(words)
+            .enter().append("text")
+            .style("font-size", function(d) { return d.size + "px"; })
+            .style("font-family", "Impact")
+            .style("fill", function(d, i) { return color(i) })
+            .attr("text-anchor", "middle")
+            .attr("transform", function(d) {
+            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+            })
+            .text(function(d) { return d.text; });
+
+          }
+
+          function drawUpdate(community){
+              var values = $.map(graph.words[(community + "")], 
+                      function(key, value) { return value });
+              var max_freq = Math.max.apply( Math, values);
+              var min_freq = Math.min.apply( Math, values);
+              words = []; 
+
+              node.style("stroke-width", function(d) { 
+                  if (d.color_value === community) {
+                      return 3;
+                  } else {
+                      return 0.5;
+                  }}).call(force.drag);
+              force.start();
+
+
+              var textsize = d3.scale.linear()
+                            .domain([0,1])
+                            .range([20,60])
+              $.each(graph.words[(community) + ""],
+                      function(key, value) {
+                          words.push({
+                              "text": key,
+                              "size": value
+                          })});
+
+
+            layout
+                  .words(words)
+                  .padding(5)
+                  .rotate(0)
+                  .font("Impact")
+                  .fontSize(function(d) { return textsize(d.size); })
+                  .start();
+
+          }
           function threshold() {
               var n_edges = parseInt(slider.val());
               links.splice(0, links.length);
 
               for (var i = 0; i < n_edges; i++) {
                   var link = graph.links[i];
-
                   if (link.value === 0.0) {
                       break;
                   }
+
                   var sourceNode = findNode(link.source);
                   var targetNode = findNode(link.target);
 
@@ -196,10 +277,16 @@
               }
               update();
           }
-          
+         
+          slider.attr("step", 1);
+          slider.attr("min" , 0);
+          slider.attr("max", 8 * graph.nodes.length);
+          slider.val(graph.nodes.length);
+          $("#slider-label").text(graph.nodes.length);  
+
           slider.on("change input", function() {
                   $("#slider-label").text(parseInt(slider.val()));
-                  threshold()
+                  threshold();
           });
             
           threshold();
