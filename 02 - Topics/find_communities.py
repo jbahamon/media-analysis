@@ -35,7 +35,7 @@ def positive_int(string):
 
     if value < 1:
         msg = "%r should be greater than 0" % string
-        raise argparse.ArgumentTypeError(msg)
+        raise ap.ArgumentTypeError(msg)
     return value
 
 parser = ap.ArgumentParser(description = "Clusters communities for a" \
