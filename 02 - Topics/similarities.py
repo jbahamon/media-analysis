@@ -201,17 +201,19 @@ def get_tf_idf(tweets, topic_keywords, names, keyword_count = None):
         component_words = sorted(component.vs["name"], key= lambda x:
                 maxtf_idf[x])
         
+        to_delete = set()
         for word in component_words:
-            print 
             if word in component.vs(component.articulation_points())["name"]:
                 if VERBOSE:
                     sys.stderr.write("deleting " + word + "\n")
-                component.delete_vertices(word)
-                g.delete_vertices(word)
-                all_keywords.discard(word)
+                to_delete.add(word)
             else: 
                 break
-        
+    
+        component.delete_vertices(to_delete)
+        g.delete_vertices(to_delete)
+        all_keywords -= to_delete
+       
     event_components = g.components(mode=ig.STRONG)
     event_membership = event_components.membership
 
