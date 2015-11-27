@@ -78,7 +78,7 @@
           .domain([0,1])
           .range(["gray", "red"]);
 
-          graph.links.sort(function(a, b) { return b.value - a.value; } );
+          graph.links.sort(function(a, b) { return b.value[0] - a.value[0]; } );
           var nodes = graph.nodes;
           var links = [];
 
@@ -150,11 +150,11 @@
                           d.target.index; });
               link.enter().append("line", ".node")
                   .attr("class", "link")
-                  .style("stroke", function(d) { return linkcolorpos(d.value);});
+                  .style("stroke", function(d) { return linkcolorpos(d.value[0]);});
 
               link.insert("title")
                   .text(function(d)  { return "Similarity " + 
-                      d.source.name + " - " + d.target.name + ": " + d.value; });
+                      d.source.name + " - " + d.target.name + ": " + d.value[0]; });
               link.exit().remove();
 
               force.start();

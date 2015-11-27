@@ -5,11 +5,11 @@ from operator import itemgetter
 from itertools import product 
 warnings.filterwarnings("error")
 
-def jaccard(nodes1, nodes2, i, j):
+def augmented_jaccard(nodes1, nodes2, i, j):
     A = set(x["name"] for x in nodes1 if x["color_value"] == i)
     B = set(x["name"] for x in nodes2 if x["color_value"] == j)
     
-    return float(len(A & B)) / float(len(A | B))
+    return (float(len(A & B)) / float(len(A | B)), float(len(A & B))) 
 
 parser = ap.ArgumentParser(description = "Computes jaccard similarities for two" 
 "clusterings")
@@ -41,8 +41,8 @@ with args.file1 as file1:
 
 
         with args.out_file as out_file:
-            scores = sorted( [ (i, j, jaccard(nodes1, nodes2, i, j)) for i, j in
-                    product(ids1,ids2) ] , key=itemgetter(2), reverse=True)
+            scores = sorted( [ (i, j, augmented_jaccard(nodes1, nodes2, i, j)) for i, j in
+                product(ids1,ids2) ] , key=lambda x: x[2][0], reverse=True)
 
             matchings = []
 
@@ -55,4 +55,4 @@ with args.file1 as file1:
 
 
             for matching in matchings:
-                out_file.write("%d - %d : %f\n" % matching)
+                out_file.write("%d - %d : %s\n" % matching)

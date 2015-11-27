@@ -86,8 +86,12 @@ for k, v in tweets.items():
 names = tweets.keys()
 news_data = tweets.values()
 
-stop_words = set(map(normalize_text, stopwords.words("spanish"))) | set(["via", "dia", "uso", "fotos", "foto", "video", "chile", "2015", "2014", "ver", "tras", "galeria", "informate", "registrate","http"] )
-
+stop_words = set(map(normalize_text, stopwords.words("spanish"))) | set(["via",
+"dia", "uso", "foto", "fotos", "video", "chile", "2015", "2014", "ver", "tras",
+"galeria", "informate", "registrate","http", "hoy", "lunes", "martes",
+"miercoles", "jueves", "viernes", "sabado", "domingo", "enero",
+"febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+"octubre", "noviembre", "diciembre", "vivo", "ahora"] )
 
 vectorizer = TfidfVectorizer(tokenizer=tokenize,
         stop_words=stop_words)
