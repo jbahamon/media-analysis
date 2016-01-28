@@ -73,7 +73,7 @@ files = [ filename for filename in os.listdir(folder) \
 i = 0
 for f in files:
     i += gather_tweets(f, tweets)
-
+print "%d tweets" % i
 for k, v in tweets.items():
     n_tweets = len(v)
     # sys.stderr.write(k + " " + str(n_tweets) + "\n")

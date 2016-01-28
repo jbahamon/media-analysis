@@ -11,7 +11,7 @@
     <div class="container centered">
         <div class="row">
             <div class="span4 collapse-group">
-                <center><h1>Vocabulary similarity graph for Chilean News Outlets
+                <center><h1>Follower similarity graph for Chilean News Outlets
                         in Twitter</h1>
                 </center>
                 <br/>
@@ -135,7 +135,8 @@
               .call(force.drag);
 
           node.insert("title")
-              .text(function(d) { return d.name });
+              .text(function(d) { return d.name + " (community " + d.color_value
+              + ")"});
           node.exit().remove();
 
           var color = d3.scale.category20();

@@ -140,7 +140,8 @@
               .on("click", function(d) { drawUpdate(d.color_value) });
 
           node.insert("title")
-              .text(function(d) { return d.name });
+              .text(function(d) { return d.name + " (community " + d.color_value
+              + ")" });
           node.exit().remove();
 
           var color = d3.scale.category20();
