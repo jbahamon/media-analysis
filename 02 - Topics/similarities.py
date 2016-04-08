@@ -231,69 +231,96 @@ def get_tf_idf(tweets, topic_keywords, names, keyword_count = None):
 
     for name in names:
 
+        if keyword_count is not None:
+            daily_count = daily_keyword_count[name]
+
         outlet_tweets = [ d[1] for d in tweets if d[0] == name ]
-        total_tweets = float(len(outlet_tweets))
 
         # don't panic.
+        # for events, terms = events. documents = twitter accounts. 
+        # occurences =  # tweets,
+
+        # for keywords, terms = keywords, documents = twitter accounts
+        # occurences = # tweets
         # we count how many tweets touch on a given event. we repeat this
         # for each event, and divide this count over the amount of tweets
-        # for that outlet. this gives us tf
+        # for that outlet. this gives us t
 
-        tf[name] = [0] * n_events
+        tf[name] = [0.0] * n_events
 
         for tweet in outlet_tweets:
             tweet_keywords = tweet & all_keywords
 
             if keyword_count is not None:
-                touched_keywords = set()
+                for kw in tweet_keywords:
+                    daily_count[kw] += 1.0
 
-               
             tfs = [0] * n_events
 
             for k1, k2 in combinations(tweet_keywords, 2):
                 try:
+                    # if the pair corresponds to a keyword pair...
                     if g.are_connected(k1, k2):
-                        tfs[event_membership[g.vs.find(name=k1).index]] = 1.0/total_tweets
-                        if keyword_count is not None:
-                            touched_keywords.add(k1)
-                            touched_keywords.add(k2)
 
-                            kw_idfs[k1].add(name)
-                            kw_idfs[k2].add(name)
-
+                        # first, we touched the event. so we set it as touched.
+                        tfs[event_membership[g.vs.find(name=k1).index]] = 1.0
                 except ValueError:
                     pass
+            
+            # now we sum the tf values for this tweet
             tf[name] = map(sum, zip(tf[name], tfs))
 
-            if keyword_count is not None:
-                for kw in touched_keywords:
-                    daily_keyword_count[name][kw] += 1.0/total_tweets
+        # we have all f's. we get max_f and normalize tf.
+        max_f = len(outlet_tweets) # max(tf[name])
 
+        # well, the outlet might have not talked about anything.
+        if max_f == 0.0:
+            max_f = 1.0
+
+        tf[name] = map(lambda f:  f/max_f, tf[name])
         
-        if REVERSE_FREQUENCIES:
-            tf[name] = map(lambda x: 1 -x, tf[name])
+        if keyword_count is not None:
+            for kw, f in daily_count.iteritems():
+                daily_count[kw] =  f/max_f
+
     # now we compute idf
 
     N = float(len(names))
 
-    if not REVERSE_FREQUENCIES:
-        idf = [ log(N/(sum(tf[name][i] > 0 for name in names) + 1)) for i in xrange(n_events) ]
-    else:
-        idf = [ log(N/(sum(tf[name][i] for name in names))) for i in xrange(n_events) ]
+    idf = [0] * n_events
+    
+    for i in xrange(n_events):
+        total = sum(tf[name][i] > 0 for name in names) 
+        if total > 0:
+            idf[i] = log(N/total)
 
     if keyword_count is not None:
-        kw_idfs = { kw: log(N/(sum(keyword_count[name][kw] > 0 for name in
-            names) + 1)) for kw in all_keywords }
-        for name in names:
-            for kw in daily_keyword_count[name].keys():
-                daily_keyword_count[name][kw] *= kw_idfs[kw]
+        
+        kw_idfs = defaultdict(float)
 
-            magnitude = norm(daily_keyword_count[name].values())
+        for kw in all_keywords:
+
+            # As we only ever put positive values in keyword counts (we use a
+            # lazy defaultdict) it's enough to see if the keyword appears
+            # amongst its keys. This form also avoids to fill keyword counts
+            # with useless zeroes.
+            total = sum((kw in kw_count) for kw_count in daily_keyword_count.values())
+
+            if total > 0:
+                kw_idfs[kw] = log(N/total)
+
+        for name in names:
+            daily_count = daily_keyword_count[name]
+            for kw in daily_count.keys():
+                daily_count[kw] *= kw_idfs[kw]
+
+
+            magnitude = norm(daily_count.values())
 
             if magnitude is 0:
                 magnitude = 1.0
             
-            for kw, val in daily_keyword_count[name].iteritems():
+            for kw, val in daily_count.iteritems():
                 keyword_count[name][kw] += val/magnitude
 
     tf_idf = dict()
@@ -309,7 +336,7 @@ def get_tf_idf(tweets, topic_keywords, names, keyword_count = None):
 
         tf_idf[name] = [ t/magnitude for t in tf[name] ]
 
-
+    
     return tf_idf
 
 def similarity(tf1, tf2):
@@ -332,14 +359,11 @@ parser.add_argument("-t", "--threshold", default=0, type=float, \
 parser.add_argument("-k", "--keywords_per_topic", default=2, type=int, \
         help = "Number of keywords per topic. Default is 2.")
 
-parser.add_argument("-d", "--topics_per_hour", default=0, type=int, \
+parser.add_argument("-d", "--topics_per_hour", default=6, type=int, \
         help = "Number of topics per hour. Default is 6")
 
 parser.add_argument("-v", "--verbose", action="store_true",
         help = "Whether to print the computed topics.")
-
-parser.add_argument("-r", "--reverse_frequencies", action="store_true",
-        help = "Reverse topic frequencies when calculating descriptors.")
 
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the "  \
         "output file.")
@@ -354,7 +378,6 @@ COUNT_KEYWORDS = args.count_keywords
 MIN_TWEETS_PER_DAY = args.threshold
 KEYWORDS_PER_TOPIC = args.keywords_per_topic
 MAX_TOPICS_PER_HOUR = args.topics_per_hour
-REVERSE_FREQUENCIES = args.reverse_frequencies
 VERBOSE = args.verbose
 
 files = [ filename for filename in os.listdir(folder) \
@@ -380,7 +403,8 @@ for k, v in similarities.iteritems():
 
     links.append( { "source": name_to_index[k.split()[0]],
                     "target": name_to_index[k.split()[1]],
-                    "values" : [ sim_avg, kurt, sim_median ]  } )
+                    "values" : [ sim_avg, kurt, sim_median ],
+                    "value" : sim_avg } )
 output = { "nodes": nodes, 
            "links" : links,
            "days" : days }

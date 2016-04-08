@@ -125,7 +125,7 @@
           .domain([0,1])
           .range(["gray", "red"]);
 
-          graph.links.sort(function(a, b) { return b.value[0] - a.value[0]; } );
+          graph.links.sort(function(a, b) { return b.values[0] - a.values[0]; } );
           var nodes = graph.nodes;
           var links = [];
 
@@ -152,12 +152,12 @@
 
           for (var i = 0; i < graph.links.length; i++) {
               var link = graph.links[i];
-              if (link.value[1] < min_width) {
-                  min_width = link.value[1];
+              if (link.values[1] < min_width) {
+                  min_width = link.values[1];
               }
 
-              if (link.value[1] > max_width) {
-                  max_width = link.value[1];
+              if (link.values[1] > max_width) {
+                  max_width = link.values[1];
               }
 
           }
@@ -264,8 +264,8 @@
                       break;
                   }
 
-                  graph.nodes[link.source].color_value += link.value[0];
-                  graph.nodes[link.target].color_value += link.value[0];
+                  graph.nodes[link.source].color_value += link.values[0];
+                  graph.nodes[link.target].color_value += link.values[0];
 
                   var sourceNode = findNode(link.source);
                   var targetNode = findNode(link.target);
@@ -273,7 +273,7 @@
                   var newLink = {
                       "source" : sourceNode,
                       "target" : targetNode,
-                      "value"  : link.value
+                      "value"  : link.values
                   }
 
                   links.push(newLink);

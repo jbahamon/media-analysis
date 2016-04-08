@@ -4,6 +4,7 @@ import argparse as ap
 import os, sys
 import igraph as ig
 import warnings
+from math import isinf
 
 warnings.filterwarnings('error')
 
@@ -58,10 +59,10 @@ parser.add_argument( "-m", "--min_points", type=int, default=1, help = \
 parser.add_argument( "-c", "--min_correlation", type=float,default=0, help = \
         "The minimum correlation to allow.")
 
-parser.add_argument( "-sl", "--min_sensitivity", type=float,default=0, help = \
+parser.add_argument( "-sl", "--min_sensitivity",  type=float,default=float("-Inf"), help = \
         "The minimum sensitivity to allow.")
 
-parser.add_argument( "-sh", "--max_sensitivity", type=float, default=2, help = \
+parser.add_argument( "-sh", "--max_sensitivity", type=float, default=float("Inf"), help = \
         "The maximum sensitivity to allow.")
 
 parser.add_argument("N", metavar="number_of_communities", type=positive_int, default=sys.stdin, help = \
@@ -87,10 +88,10 @@ with args.in_file as json_file:
         chosen_edges = []
 
         for edge in parsed_json["links"][args.term]:
-            if edge["value"][0] > min_correlation and \
-                    edge["value"][1] >= min_sensitivity and\
-                    edge["value"][1] < max_sensitivity and\
-                    edge["value"][2] >= min_points:
+            if edge["values"][0] > min_correlation and \
+                    edge["values"][1] >= min_sensitivity and\
+                    edge["values"][1] < max_sensitivity and\
+                    edge["values"][2] >= min_points:
                     chosen_edges.append(edge)
                     chosen_nodes.append(edge["source"])
                     chosen_nodes.append(edge["target"])
@@ -100,11 +101,11 @@ with args.in_file as json_file:
         index_to_node = { v:k for (k,v) in enumerate(set(chosen_nodes)) }
 
         weights = []
-        min_weight = min([ edge["value"][0] for edge in chosen_edges ])
+        min_weight = min([ edge["values"][0] for edge in chosen_edges ])
         for i, edge in enumerate(chosen_edges):
             chosen_edges[i] = (index_to_node[edge["source"]],
                     index_to_node[edge["target"]])
-            weights.append(edge["value"][0] - min_weight)
+            weights.append(edge["values"][0] - min_weight)
 
         g = ig.Graph(n = len(node_to_index), edges=chosen_edges, directed=False)
         g.es["weight"] = weights
@@ -117,6 +118,11 @@ with args.in_file as json_file:
             except KeyError:
                 node["color_value"] = 0
 
+        if isinf(min_sensitivity):
+            min_sensitivity = min(edge["values"][1] for edge in parsed_json["links"][args.term])
+
+        if isinf(max_sensitivity):
+            max_sensitivity = max(edge["values"][1] for edge in parsed_json["links"][args.term])
         parsed_json["links"] = parsed_json["links"][args.term]
         parsed_json["min_n"] = min_points
         parsed_json["min_corr"] = min_correlation

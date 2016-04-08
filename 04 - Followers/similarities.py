@@ -3,7 +3,7 @@ import json
 import argparse as ap
 import os, sys
 from itertools import combinations
-parser = ap.ArgumentParser(description = "Computes follower-bassed similarities from a" \
+parser = ap.ArgumentParser(description = "Computes follower-based similarities from a" \
     " JSON file containing outlet's followers' IDs")
 
 parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the "  \
@@ -43,7 +43,8 @@ for k, v in similarities.iteritems():
 
     links.append( { "source": name_to_index[k[0]],
                     "target": name_to_index[k[1]],
-                    "value" : v  } )
+                    "value" : v[0],
+                    "values" : v  } )
 
 with args.out_file as out_file:
 

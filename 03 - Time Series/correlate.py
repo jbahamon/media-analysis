@@ -83,7 +83,7 @@ def get_correlation_confidence(series1, series2, args):
     
     full_correlation = spearmanr(normalize_series(series1, args),\
             normalize_series(series2, args))[0]
-    return (full_correlation, CI_size, n)
+    return (full_correlation, k, n)
 
 
 parser = ap.ArgumentParser(description = "Computes correlations for a " \
@@ -140,7 +140,8 @@ with args.in_file as json_file:
 
                     links[term].append( { "source": i, \
                                     "target": j, \
-                                    "value" : correlation_confidence })
+                                    "value"  : correlation_confidence[0],
+                                    "values" : correlation_confidence })
 
 
         if args.pretty:

@@ -182,8 +182,8 @@
           var keys = Object.keys(graph.links);
           for (var i = 0; i < keys.length; i++) {
               var item = keys[i];
-              graph.links[item].sort(function(a, b) { return b.value[0] -
-                  a.value[0] } )
+              graph.links[item].sort(function(a, b) { return b.values[0] -
+                  a.values[0] } )
 
               $("#term")
               .append($("<li>")
@@ -356,13 +356,13 @@
               for (var i = 0; i < graph.links[term].length; i++) {
                   var link = graph.links[term][i];
 
-                  if (link.value[2] >= n_threshold &&
-                          link.value[1] < s_threshold_high && 
-                          link.value[1] >= s_threshold_low) {
+                  if (link.values[2] >= n_threshold &&
+                          link.values[1] < s_threshold_high && 
+                          link.values[1] >= s_threshold_low) {
 
                       added_links += 1;
 
-                      if (added_links > n_links || link.value[0] === 0.0) {
+                      if (added_links > n_links || link.values[0] === 0.0) {
                         break;
                       }
                       graph.nodes[link.source].color_value++;
@@ -374,7 +374,7 @@
                       var newLink = { 
                           "source" : sourceNode,
                           "target" : targetNode,
-                          "value"  : link.value 
+                          "value"  : link.values 
                       }
 
                       links.push(newLink);

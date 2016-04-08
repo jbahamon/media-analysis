@@ -98,30 +98,30 @@
           var min_n = Infinity;
           var max_n = -Infinity;
           
-          graph.links.sort(function(a, b) { return b.value[0] - a.value[0] });
+          graph.links.sort(function(a, b) { return b.values[0] - a.values[0] });
 
           for (var i = 0; i < graph.links.length; i++) {
             var link = graph.links[i];
    
 
-            if (link.value[2] >= graph.min_n &&
-                link.value[1] < graph.max_sens && 
-                link.value[1] >= graph.min_sens) {
+            if (link.values[2] >= graph.min_n &&
+                link.values[1] < graph.max_sens && 
+                link.values[1] >= graph.min_sens) {
                 links[links.length] = link;
-                if (link.value[1] < min_s) {
-                    min_s = link.value[1];
+                if (link.values[1] < min_s) {
+                    min_s = link.values[1];
                 }
         
-                if (link.value[1] > max_s) {
-                    max_s = link.value[1];
+                if (link.values[1] > max_s) {
+                    max_s = link.values[1];
                 }
                     
                 if (link.value[2] < min_n) {
-                    min_n = link.value[2];
+                    min_n = link.values[2];
                 }
         
                 if (link.value[2] > max_n) {
-                    max_n = link.value[2];
+                    max_n = link.values[2];
                 }
             }
           }
@@ -224,7 +224,7 @@
             for (var i = 0; i < n_edges; i++) {
                 var link = graph.links[i];
 
-                if (link.value[0] === 0.0) {
+                if (link.values[0] === 0.0) {
                     break;
                 }
 
@@ -235,7 +235,7 @@
                 var newLink = { 
                     "source" : sourceNode,
                     "target" : targetNode,
-                    "value"  : link.value 
+                    "value"  : link.values
                 }
 
                 links.push(newLink);

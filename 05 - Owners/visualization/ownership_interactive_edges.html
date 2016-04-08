@@ -116,7 +116,7 @@
 
       $(function() {
         
-        d3.json("follower_similarities.json", function(error, graph) {
+        d3.json("ownership_similarities.json", function(error, graph) {
        
           var width = 800,
               height = 600;
@@ -246,7 +246,6 @@
 
                   if (link.value > min_value) {
                     
-
                       var sourceNode = findNode(link.source);
                       var targetNode = findNode(link.target);
                     
@@ -270,7 +269,7 @@
           }
           
           slider.on("change input", function() {
-                  $("#slider-label").text(slider.val());
+                  $("#slider-label").text(parseFloat(slider.val()));
                   threshold()
           });
             
