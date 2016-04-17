@@ -5,6 +5,19 @@ import os, sys
 
 import warnings
 warnings.filterwarnings('error')
+
+key_file = "../keys.json"
+
+with open(key_file,"r") as f:
+    params = json.loads(f.read())
+
+    consumer_key = params["consumer_key"]
+    consumer_secret = params["consumer_secret"]
+
+    access_token = params["access_token"]
+    access_token_secret = params["access_token_secret"]
+
+
 date_format = "%Y-%m-%d"
 
 parser = ap.ArgumentParser(description = "Computes correlations for a " \
@@ -26,13 +39,6 @@ from kitchen.text.converters import getwriter
 UTF8Writer = getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 import tweepy
-
-consumer_key = "AGIHoohA7Ymc1EQHjYGbLJnR3"
-consumer_secret = "36T9pEefyqAN169I6RQP7VWbzCjsoNxxem9RNyzriBDECh01j6"
-
-access_token = "344739490-NMCoBccIwoCv78AXxlO0DtFdJouMyajiOleX3QPs"
-access_token_secret = "izjgLNuBUAeBGcVuBKqOenUqLIuVCTU6dBvivY0IdkJUq"
-
 
 with args.in_file as json_file:
     with args.out_file as out_file:
