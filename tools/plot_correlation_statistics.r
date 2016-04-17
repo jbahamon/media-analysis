@@ -12,6 +12,7 @@ if (length(args) < 3) {
     name <- args[3]
 }
 
+theme_set(theme_gray(base_size = 18))
 
 correlations <- read.csv2(correlation, header=FALSE, dec=".", sep="\t", check.names=FALSE)
 
@@ -23,8 +24,10 @@ ggplot(correlations, aes(x=V1,y=V2)) +
     theme(panel.background  = element_rect(fill="white"),
           panel.grid.major = element_line(color="#ebebeb"),
           panel.grid.minor = element_line(color="#ebebeb")) +
-    labs(x="Correlation", y="Kurtosis", fill="Count")
+    labs(x="Correlation", y="Kurtosis", fill="Count", title="Correlation and Kurtosis Distribution for 'President' term set") + 
+    theme(plot.title = element_text(size=18))
 
 
-ggsave(paste(folder, "/", name, "_correlation_distribution.png", sep=""))
+
+ggsave(paste(folder, "/", name, "_correlation_distribution.pdf", sep=""))
 
