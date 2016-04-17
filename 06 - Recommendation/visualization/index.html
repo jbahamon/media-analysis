@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/recommendation.css" rel="stylesheet">
+    <script src="js/jquery-1.11.3.js" type="text/javascript"></script>
+    <script src="js/bootstrap.js" type="text/javascript"></script>
+    <script src="js/jquery.validate.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+        <div class="page-header">
+            <h1>Recommendation proof-of-concept</h1>
+        </div>
+        <h3>Your info:</h3>
+        <br/>
+        <form role="form" id="user-form">
+            <div class="form-group row">
+                <label for="username" class="col-md-2">Twitter Username</label>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="basic-addon1">@</span>
+                        <input type="text" class="form-control"
+                                           placeholder="Username"
+                                           aria-describedby="basic-addon1"
+                                           maxlength="15"
+                                           id="username"
+                                           name="username">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-md-2">Criteria to include:</label>
+                <div class="col-md-10">
+                    <div id="options" class="btn-group" data-toggle="buttons" role="group">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group-row">
+                <div class="col-md-offset-2 col-md-10">
+                <button class="btn" type="submit" id="randomize">Try it!</button>
+                </div>
+            </div>
+        </form>
+        </div>
+        </section>
+        </div>
+        <div class="row hidden" id="results-row">
+        <div class="col-md-offset-3 col-md-6">
+        <hr/>
+        <div>
+        <h3>Our recommendation:</h3>
+        <p> You might want to follow these Twitter accounts to receive a more
+        diverse content :</p>
+        <ul id="results">
+        </ul>
+        <p>
+        Click on "Try it!" again if you want to see a different set of
+        suggestions!
+        </p>
+        </div>
+        </div>
+        </div>
+    <script type="text/javascript" async src="https://platform.twitter.com/widgets.js"></script>
+    <script src="js/recommendation.js" type="text/javascript"></script>
+</body>
+</html>

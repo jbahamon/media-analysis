@@ -1,11 +1,15 @@
 #!/usr/bin/python
+
+from flask import Flask
+from flask.ext.cors import CORS, cross_origin
+
 import json
-import os, sys
-import argparse as ap
+import sys
 import warnings
+import tweepy
+warnings.filterwarnings('error')
 
 key_file = "../keys.json"
-warnings.filterwarnings('error')
 
 with open(key_file,"r") as f:
     params = json.loads(f.read())
@@ -16,36 +20,33 @@ with open(key_file,"r") as f:
     access_token = params["access_token"]
     access_token_secret = params["access_token_secret"]
 
-date_format = "%Y-%m-%d"
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
 
-parser = ap.ArgumentParser(description = "Gets Twitter IDs for a JSON objects"
-        " with an 'outlets' property.")
+api = tweepy.API(auth)
 
-parser.add_argument( "username", type=str, help = "The username to find friends"
-        " for.")
+app = Flask(__name__)
+cors = CORS(app, resources={r"/foo": {"origins": "*"}})
+app.config['SECRET_KEY'] = 'meowth thats right'
+app.config['CORS_HEADERS'] = 'Content-Type'
 
-parser.add_argument("-p", "--pretty", action="store_true", help = "Pretty print the " \
-        "output file.")
+cors = CORS(app, resources={r"/*": {"origins": "localhost"},})
 
-parser.add_argument("-o", "--out_file", type=ap.FileType("w"), default=sys.stdout, help = \
-    "The file to be output. If not specified, the standard output will be used.")
+@app.route('/screen_name/<screen_name>')
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+def getFriendListFromScreenName(screen_name):
+    c = tweepy.Cursor(api.friends_ids, screen_name=screen_name);
+    friend_list = getFriendListFromCursor(c)
+    return json.dumps(friend_list)
 
-args = parser.parse_args()
+@app.route('/user_id/<user_id>')
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+def getFriendListFromUserId(user_id):
+    c = tweepy.Cursor(api.friends_ids, user_id=user_id);
+    friend_list = getFriendListFromCursor(c)
+    return json.dumps(friend_list)
 
-from kitchen.text.converters import getwriter
-UTF8Writer = getwriter('utf8')
-sys.stdout = UTF8Writer(sys.stdout)
-import tweepy
-
-with args.out_file as out_file:
-
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-
-    api = tweepy.API(auth)
-
-    c = tweepy.Cursor(api.friends_ids, screen_name=args.username);
-    
+def getFriendListFromCursor(c):
     ids = []
 
     for page in c.pages():
@@ -56,11 +57,9 @@ with args.out_file as out_file:
             except tweepy.RateLimitError as e:
                 sys.stderr.write(str(e))
                 sleep(60)
-
-    if args.pretty:
-        out_file.write(json.dumps(ids, \
-            indent = 4, separators = (",",":")))
-    else:
-        out_file.write(json.dumps(ids))
+    
+    return ids
 
 
+if __name__ == "__main__":
+        app.run()
