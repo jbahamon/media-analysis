@@ -4,39 +4,47 @@ ul {
     list-style-image: url("../images/Twitter_logo.png"); 
     vertical-align:middle;
 }
-
-spinner {
-    display: inline-block;
-    opacity: 0;
-    width: 0;
-
-    -webkit-transition: opacity 0.25s, width 0.25s;
-    -moz-transition: opacity 0.25s, width 0.25s;
-    -o-transition: opacity 0.25s, width 0.25s;
-    transition: opacity 0.25s, width 0.25s;
+.glyphicon.spinning {
+    animation: spin 1s infinite linear;
+    -webkit-animation: spin2 1s infinite linear;
+}
+.glyphicon-refresh.spinning {
+    transform-origin: 48% 50%;
 }
 
-.has-spinner.active {
-    cursor:progress;
+.centerBlock {
+    display:table;
+    margin: 0  auto;
 }
 
-.has-spinner.active .spinner {
+.chart {
+    height: 200px;
+    position: relative;
+    width: 200px;
+}
+
+.tooltip {
+    background: #eee;
+    box-shadow: 0 0 5px #999999;
+    color: #333;
+    display: none;
+    font-size: 12px;
+    left: 130px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 95px;
+    z-index: 70;
     opacity: 1;
-    width: auto; /* This doesn't work, just fix for unkown width elements */
 }
 
-.has-spinner.btn-mini.active .spinner {
-    width: 10px;
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
 }
 
-.has-spinner.btn-small.active .spinner {
-    width: 13px;
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
 }
 
-.has-spinner.btn.active .spinner {
-    width: 16px;
-}
-
-.has-spinner.btn-large.active .spinner {
-    width: 19px;
-}

@@ -1,507 +1,507 @@
 {
     "communities":{
         "elobservatodo":{
-            "Topics":1,
-            "Vocabulary":1,
+            "Topic":1,
             "Follower":1,
+            "Vocabulary":1,
             "Ownership":1
         },
         "el_amaule":{
-            "Topics":1,
-            "Vocabulary":1,
+            "Topic":1,
             "Follower":2,
+            "Vocabulary":1,
             "Ownership":1
         },
         "elmostrador":{
-            "Topics":2,
-            "Vocabulary":0,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":0
         },
         "estrellaconce":{
-            "Topics":3,
-            "Vocabulary":2,
+            "Topic":3,
             "Follower":4,
+            "Vocabulary":2,
             "Ownership":2
         },
         "elrancaguino":{
-            "Topics":0,
-            "Vocabulary":3,
+            "Topic":0,
             "Follower":5,
+            "Vocabulary":3,
             "Ownership":0
         },
         "estrellachiloe":{
-            "Topics":3,
-            "Vocabulary":0,
+            "Topic":3,
             "Follower":6,
+            "Vocabulary":0,
             "Ownership":2
         },
         "estrella_antofa":{
-            "Topics":4,
-            "Vocabulary":5,
+            "Topic":4,
             "Follower":10,
+            "Vocabulary":5,
             "Ownership":2
         },
         "ellongino":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":7,
+            "Vocabulary":0,
             "Ownership":0
         },
         "eo_enlinea":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":8,
+            "Vocabulary":0,
             "Ownership":0
         },
         "laestrellaiqq":{
-            "Topics":3,
-            "Vocabulary":1,
+            "Topic":3,
             "Follower":7,
+            "Vocabulary":1,
             "Ownership":2
         },
         "elaconcagua":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "emol":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":2
         },
         "estrella_loa":{
-            "Topics":3,
-            "Vocabulary":0,
+            "Topic":3,
             "Follower":10,
+            "Vocabulary":0,
             "Ownership":2
         },
         "cooperativa":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "elmartutino":{
-            "Topics":1,
-            "Vocabulary":2,
+            "Topic":1,
             "Follower":8,
+            "Vocabulary":2,
             "Ownership":1
         },
         "ddivisadero":{
-            "Topics":0,
-            "Vocabulary":4,
+            "Topic":0,
             "Follower":11,
+            "Vocabulary":4,
             "Ownership":0
         },
         "diariolider":{
-            "Topics":3,
-            "Vocabulary":0,
+            "Topic":3,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":2
         },
         "elrepuertero":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":1
         },
         "elnaveghable":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":1
         },
         "estrelladearica":{
-            "Topics":3,
-            "Vocabulary":6,
+            "Topic":3,
             "Follower":3,
+            "Vocabulary":6,
             "Ownership":2
         },
         "noticiasmalleco":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "diarioatacama":{
-            "Topics":3,
-            "Vocabulary":0,
+            "Topic":3,
             "Follower":13,
+            "Vocabulary":0,
             "Ownership":2
         },
         "adnradiochile":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "estrella_toco":{
-            "Topics":4,
-            "Vocabulary":5,
+            "Topic":4,
             "Follower":10,
+            "Vocabulary":5,
             "Ownership":2
         },
         "lanalhue":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "24horastvn":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "diarioelcentro":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":2,
+            "Vocabulary":0,
             "Ownership":0
         },
         "diariolabrador":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "diarioelnortino":{
-            "Topics":0,
-            "Vocabulary":1,
+            "Topic":0,
             "Follower":7,
+            "Vocabulary":1,
             "Ownership":0
         },
         "onemichile":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":0
         },
         "elvacanudo":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":1
         },
         "soyvaldiviacl":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":6,
+            "Vocabulary":2,
             "Ownership":0
         },
         "nacioncl":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "elovallino":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":1,
+            "Vocabulary":0,
             "Ownership":0
         },
         "austral_osorno":{
-            "Topics":3,
-            "Vocabulary":3,
+            "Topic":3,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":2
         },
         "carabdechile":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":0
         },
         "lun":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":2
         },
         "elsurcl":{
-            "Topics":3,
-            "Vocabulary":2,
+            "Topic":3,
             "Follower":4,
+            "Vocabulary":2,
             "Ownership":2
         },
         "thecliniccl":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "lacuarta":{
-            "Topics":2,
-            "Vocabulary":0,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":3
         },
         "mercurioafta":{
-            "Topics":4,
-            "Vocabulary":5,
+            "Topic":4,
             "Follower":10,
+            "Vocabulary":5,
             "Ownership":2
         },
         "elparadiario14":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":0,
+            "Vocabulary":3,
             "Ownership":1
         },
         "laopinon":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":0,
+            "Vocabulary":3,
             "Ownership":1
         },
         "tv_mauricio":{
-            "Topics":2,
-            "Vocabulary":0,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":0
         },
         "ultimahoracl":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "latribunacl":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "t13":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "diariolahora":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":3
         },
         "el_ciudadano":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "eldia_cl":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":1,
+            "Vocabulary":0,
             "Ownership":0
         },
         "australtemuco":{
-            "Topics":3,
-            "Vocabulary":3,
+            "Topic":3,
             "Follower":0,
+            "Vocabulary":3,
             "Ownership":2
         },
         "pinguinodiario":{
-            "Topics":0,
-            "Vocabulary":3,
+            "Topic":0,
             "Follower":12,
+            "Vocabulary":3,
             "Ownership":0
         },
         "publimetrochile":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "la_segunda":{
-            "Topics":2,
-            "Vocabulary":0,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":0,
             "Ownership":2
         },
         "diario_eha":{
-            "Topics":0,
-            "Vocabulary":3,
+            "Topic":0,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":0
         },
         "elboyaldia":{
-            "Topics":1,
-            "Vocabulary":1,
+            "Topic":1,
             "Follower":7,
+            "Vocabulary":1,
             "Ownership":1
         },
         "serenaycoquimbo":{
-            "Topics":0,
-            "Vocabulary":1,
+            "Topic":0,
             "Follower":1,
+            "Vocabulary":1,
             "Ownership":0
         },
         "noticias_rgua":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":5,
+            "Vocabulary":0,
             "Ownership":0
         },
         "s_schwartzmann":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":4,
+            "Vocabulary":2,
             "Ownership":0
         },
         "ultimominutocl":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "ahnoticiasmega":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":0,
+            "Vocabulary":2,
             "Ownership":0
         },
         "latercera":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":3
         },
         "cronicachillan":{
-            "Topics":3,
-            "Vocabulary":7,
+            "Topic":3,
             "Follower":4,
+            "Vocabulary":7,
             "Ownership":2
         },
         "diariodeaysen":{
-            "Topics":0,
-            "Vocabulary":4,
+            "Topic":0,
             "Follower":11,
+            "Vocabulary":4,
             "Ownership":0
         },
         "biobio":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "diarioconce":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":4,
+            "Vocabulary":0,
             "Ownership":3
         },
         "soyvalparaiso":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":8,
+            "Vocabulary":2,
             "Ownership":2
         },
         "ellanquihue":{
-            "Topics":3,
-            "Vocabulary":3,
+            "Topic":3,
             "Follower":6,
+            "Vocabulary":3,
             "Ownership":2
         },
         "mercuriocalama":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":10,
+            "Vocabulary":0,
             "Ownership":0
         },
         "elconcecuente":{
-            "Topics":1,
-            "Vocabulary":1,
+            "Topic":1,
             "Follower":4,
+            "Vocabulary":1,
             "Ownership":1
         },
         "laprensacurico":{
-            "Topics":0,
-            "Vocabulary":1,
+            "Topic":0,
             "Follower":2,
+            "Vocabulary":1,
             "Ownership":0
         },
         "tribunac":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "diariolasnotic":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":0,
             "Ownership":0
         },
         "elnortero":{
-            "Topics":1,
-            "Vocabulary":1,
+            "Topic":1,
             "Follower":10,
+            "Vocabulary":1,
             "Ownership":1
         },
         "cnnchile":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         },
         "elmorrocotudo":{
-            "Topics":1,
-            "Vocabulary":6,
+            "Topic":1,
             "Follower":3,
+            "Vocabulary":6,
             "Ownership":1
         },
         "elmagallanews":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":12,
+            "Vocabulary":3,
             "Ownership":1
         },
         "chanarcillo":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":13,
+            "Vocabulary":0,
             "Ownership":0
         },
         "ladiscusioncl":{
-            "Topics":0,
-            "Vocabulary":7,
+            "Topic":0,
             "Follower":4,
+            "Vocabulary":7,
             "Ownership":0
         },
         "aricanoticias":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":3,
+            "Vocabulary":0,
             "Ownership":0
         },
         "elpatagonicocl":{
-            "Topics":0,
-            "Vocabulary":2,
+            "Topic":0,
             "Follower":0,
+            "Vocabulary":2,
             "Ownership":0
         },
         "laprensaustral":{
-            "Topics":0,
-            "Vocabulary":0,
+            "Topic":0,
             "Follower":12,
+            "Vocabulary":0,
             "Ownership":0
         },
         "elrancahuaso":{
-            "Topics":1,
-            "Vocabulary":3,
+            "Topic":1,
             "Follower":5,
+            "Vocabulary":3,
             "Ownership":1
         },
         "terrachile":{
-            "Topics":2,
-            "Vocabulary":2,
+            "Topic":2,
             "Follower":9,
+            "Vocabulary":2,
             "Ownership":0
         }
     },
@@ -592,7 +592,7 @@
         "18047052":"eldia_cl"
     },
     "labels":[
-        "Topics",
+        "Topic",
         "Vocabulary",
         "Ownership",
         "Follower"
@@ -684,9 +684,9 @@
         "laestrellaiqq"
     ],
     "sizes":{
-        "Topics":5,
-        "Vocabulary":8,
+        "Topic":5,
         "Follower":14,
+        "Vocabulary":8,
         "Ownership":4
     }
 }
