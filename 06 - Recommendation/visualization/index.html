@@ -10,6 +10,7 @@
     <script src="js/bootstrap.js" type="text/javascript"></script>
     <script src="js/jquery.validate.min.js" type="text/javascript"></script>
     <script src="js/d3.v3.js" type="text/javascript"></script>
+    <script src="js/d3.layout.cloud.js" type="text/javascript"></script>
 </head>
 <body>
     <div class="container">
@@ -96,10 +97,44 @@
             </ul>
         </div>
         </div>
+        <div class="row hidden option-graph" id="template-graph-row">
+            <div class="col-md-offset-2 col-md-8">
+                <div class="graph panel panel-default">
+                    <div class="panel-heading" id="template-heading">
+                        <h4 class="panel-title">
+                            <a role="button" data-toggle="collapse"
+                                             href="#template-panel"
+                                             aria-expanded="false"
+                                             aria-controls="template-panel"
+                                             class="toggler">
+                                Explore the groups we found...
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="template-panel" class="panel-collapse collapse" aria-labelledby="template-heading">
+                        <div class="panel-body centerBlock">
+                            <svg class="cloud-svg" 
+                                 width="300"
+                                 height="300"
+                                 >
+                            </svg>
+                            <svg class="graph-svg" 
+                                 width="200"
+                                 height="200"
+                                 >
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            <hr/>
+            </div>
+
+        </div>
         <div class="row hidden" id="results-row">
         <div class="col-md-offset-3 col-md-6">
         <hr/>
         <div>
+
         <h3>Our recommendation:</h3>
         <p> You might want to follow these Twitter accounts to receive a more
         diverse content :</p>
@@ -124,6 +159,7 @@
 
     <script type="text/javascript" async src="https://platform.twitter.com/widgets.js"></script>
     <script src="js/recommendation-util.js" type="text/javascript"></script>
+    <script src="js/recommendation-graphs.js" type="text/javascript"></script>
     <script src="js/recommendation-stats.js" type="text/javascript"></script>
     <script src="js/recommendation-compute.js" type="text/javascript"></script>
     <script src="js/recommendation.js" type="text/javascript"></script>

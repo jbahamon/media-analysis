@@ -86,7 +86,7 @@ if args.follower_clusters is not None:
             followers_exclusive += 1.0
 
     with args.follower_clusters as follower_clusters_file:
-        follower_clusters_file.write("Number of communities;With unclustered;Without unclustered\n")
+        follower_clusters_file.write("N;without_unclustered;has_unclustered\n")
 
         full_range = sorted(list(set(clusters_per_follower.keys()) |
                                  set(clusters_per_follower_with_zeros.keys())))

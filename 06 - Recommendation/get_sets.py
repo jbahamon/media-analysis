@@ -28,18 +28,23 @@ for i, f in enumerate(args.files):
 outlets = defaultdict(lambda : {label : 0 for label in labels} )
 sizes = {}
 offset = 0
+graphs = dict()
+
 for i, f in enumerate(args.files):
     with f as community_file:
         parsed_json = json.loads(community_file.read())
-        
-        sizes[labels[i]] = (len(set(elem["color_value"] for elem in parsed_json)))
 
-        for elem in parsed_json:
+        graphs[labels[i]] = parsed_json
+
+        nodes = parsed_json["nodes"]
+        
+        sizes[labels[i]] = (len(set(elem["color_value"] for elem in nodes)))
+
+        for elem in nodes:
             outlets[elem["name"].lower()][labels[i]] = elem["color_value"] 
 
-
-
 out_json = {
+    "graphs" : graphs,
     "communities" : outlets,
     "outlets" : map(lambda x: x.lower(), outlets.keys()),
     "sizes"   : sizes,

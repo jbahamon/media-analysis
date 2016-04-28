@@ -3,7 +3,7 @@ var dataset = {};
 /////////////////////////////////////////////////////////////////////////////////
 // EVENTS AND LIBRARY SETUP /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
-//
+
 $.validator.setDefaults({
     errorElement: "span",
     errorClass: "help-block",
@@ -42,6 +42,8 @@ $.getJSON("community_sets.json", function(sets) {
     var title_template = $("#template-title-row");
     var text_template = $("#template-text-row");
     var content_template = $("#template-content-row");
+    var graph_template = $("#template-graph-row");
+
 
     var total = 0;
 
@@ -73,10 +75,46 @@ $.getJSON("community_sets.json", function(sets) {
         var new_content = content_template.clone();
         new_content.attr("id", label + "-content-row");
 
+        var new_graph = graph_template.clone();
+        new_graph.attr("id", label + "-graph-row");
+
+        new_graph.find("#template-heading").attr("id", label + "-heading");
+        new_graph.find("a")
+            .attr("href", "#" + label + "-panel")
+            .attr("aria-controls", label + "-panel");
+
+        new_graph.find("#template-panel")
+            .attr("id", label + "-panel")
+            .attr("aria-labelledby", label + "-heading");
+
         new_title.insertBefore(title_template);
         new_text.insertBefore(title_template);
         new_content.insertBefore(title_template);
+        new_graph.insertBefore(title_template);
 
+        var panel      = new_graph.find(".panel-body");
+        var graph_svg  = new_graph.find(".graph-svg");
+        var force;
+
+        if (dataset.graphs[label].words !== undefined) {
+            force = createGraph(d3.selectAll(graph_svg),
+                    300,
+                    300,
+                    dataset.graphs[label]);
+        } else {
+            panel.find(".cloud-svg").remove();
+
+            force = createGraph(d3.selectAll(graph_svg),
+                    400,
+                    400,
+                    dataset.graphs[label]);
+        }
+
+        new_graph.find(".panel-collapse").on("show.bs.collapse", function () {
+            force.start();
+        }).bind("hide.bs.collapse", function () {
+            force.stop();
+        });
     });
 });
 
@@ -105,6 +143,7 @@ $("#user-form").validate({
         selectOptions();
 
         $(".option-title").addClass("hidden");
+        $(".option-graph").addClass("hidden");
         $(".option-content").addClass("hidden");
 
         $.each(dataset.selected_options, function(idx, val) {
@@ -164,7 +203,7 @@ var getUserData = function(after_done) {
     
     dataset.screen_name = screen_name;
 
-    //$.getJSON("http://localhost:5000/screen_name/" + screen_name, function(following_list) {
+//    $.getJSON("http://localhost:5000/screen_name/" + screen_name, function(following_list) {
     $.getJSON("./following.json", function(following_list) {
         dataset.followed_outlets = [];
 

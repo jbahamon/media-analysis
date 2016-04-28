@@ -41,6 +41,7 @@ var loadStats = function(option) {
     $("#" + option + "-title-row").removeClass("hidden");
     $("#" + option + "-text-row").removeClass("hidden");
     $("#" + option + "-content-row").removeClass("hidden");
+    $("#" + option + "-graph-row").removeClass("hidden");
     
 }
 

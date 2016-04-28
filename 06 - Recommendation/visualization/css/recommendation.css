@@ -1,3 +1,14 @@
+ 
+    .node {
+      stroke: #000000;
+    }
+
+    .link {
+      stroke: #000000;
+      stroke-width: 3px;
+    }
+
+
 ul { 
     list-style-type: square; 
     list-style-position: outside; 
